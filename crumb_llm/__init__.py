@@ -4,9 +4,9 @@ CrumbLLM reads CRUMB files (the project-memory handoff format), understands
 project memory, and produces summaries, risks, next actions, PR notes, and
 improved handoffs.
 
-It is *not* the CRUMB spec (that lives in ``crumb-format``) and it is *not*
-IBM Bob session capture (that lives in ``Crumb-Bob``). CrumbLLM only reads
-CRUMB artifacts and reasons over them.
+It is *not* IBM Bob session capture (that lives in ``Crumb-Bob``). CrumbLLM
+only reads CRUMB artifacts and reasons over them; it bundles its own CRUMB
+reader and is independent of ``crumb-format``.
 """
 
 from crumb_llm.models import (

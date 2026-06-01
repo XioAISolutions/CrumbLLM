@@ -1,20 +1,14 @@
 """Parse and validate CRUMB documents.
 
-CrumbLLM is **standalone**: it bundles its own CRUMB reader in
-:mod:`crumb_llm.crumb.spec`, so reading ``.crumb`` files has no runtime
-dependency on ``crumb-format`` (or anything else). This module is the single
-seam between CrumbLLM and the CRUMB grammar — the rest of the package only ever
-sees the parsed ``{"headers": {...}, "sections": {...}}`` mapping returned here.
-
-If the canonical ``crumb-format`` package is installed it is *preferred* (so
-CrumbLLM tracks the upstream spec automatically), but it is never required: the
-bundled reader is a complete fallback.
+CrumbLLM is **independent**: it bundles its own CRUMB reader in
+:mod:`crumb_llm.crumb.spec` and uses it exclusively. Reading ``.crumb`` files
+has no dependency on ``crumb-format`` (or anything else) — CrumbLLM never
+imports, prefers, or requires it. This module is the single seam between
+CrumbLLM and the CRUMB grammar; the rest of the package only ever sees the
+parsed ``{"headers": {...}, "sections": {...}}`` mapping returned here.
 """
 
 from __future__ import annotations
-
-from functools import lru_cache
-from typing import Callable
 
 from crumb_llm.crumb import spec
 
@@ -22,29 +16,10 @@ from crumb_llm.crumb import spec
 class CrumbFormatUnavailable(RuntimeError):
     """Kept for backwards compatibility.
 
-    CrumbLLM now bundles its own CRUMB reader, so parsing is always available
-    and this is never raised. It remains importable so existing callers that
+    CrumbLLM bundles its own CRUMB reader, so parsing is always available and
+    this is never raised. It remains importable so existing callers that
     reference it keep working.
     """
-
-
-@lru_cache(maxsize=1)
-def _resolve_parser() -> Callable[[str], dict]:
-    # Prefer the canonical crumb-format parser when it is installed, so CrumbLLM
-    # tracks the upstream spec; otherwise fall back to the bundled reader.
-    try:
-        from crumb_format import parse_crumb  # type: ignore
-
-        return parse_crumb
-    except Exception:
-        pass
-    try:
-        from cli.crumb import parse_crumb  # type: ignore
-
-        return parse_crumb
-    except Exception:
-        pass
-    return spec.parse_crumb
 
 
 def parse_text(text: str) -> dict:
@@ -52,7 +27,7 @@ def parse_text(text: str) -> dict:
 
     Raises ``ValueError`` on malformed CRUMB.
     """
-    return _resolve_parser()(text)
+    return spec.parse_crumb(text)
 
 
 def validate_text(text: str) -> list[str]:

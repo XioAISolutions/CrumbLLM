@@ -43,7 +43,7 @@ def export_dataset(
             try:
                 doc = load_crumb(crumb_path)
             except Exception:
-                continue  # let crumb-format's linter handle malformed files
+                continue  # skip malformed files; export is best-effort
             meta = {
                 "source_path": str(crumb_path),
                 "kind": doc.kind,

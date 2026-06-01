@@ -31,8 +31,8 @@ def _read_manifest(root: Path) -> dict | None:
 def read_pack(pack_dir: str | Path) -> CrumbPack:
     """Load every ``.crumb`` file under ``pack_dir`` into a :class:`CrumbPack`.
 
-    Files that fail to parse are skipped silently here; surfacing per-file
-    validation belongs to crumb-format's linter, not CrumbLLM.
+    Files that fail to parse are skipped silently here; ``read_pack`` is a
+    best-effort loader, not a validator.
     """
     root = Path(pack_dir)
     if not root.is_dir():
@@ -43,7 +43,7 @@ def read_pack(pack_dir: str | Path) -> CrumbPack:
         try:
             docs.append(load_crumb(crumb_path))
         except Exception:
-            # Malformed members are skipped; validation is crumb-format's job.
+            # Malformed members are skipped; read_pack does not validate.
             continue
 
     return CrumbPack(root=str(root), docs=docs, manifest=_read_manifest(root))
