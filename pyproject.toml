@@ -19,14 +19,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 
-# CrumbLLM is standalone: it bundles its own CRUMB reader
+# CrumbLLM is independent: it bundles its own CRUMB reader
 # (crumb_llm/crumb/spec.py) and needs nothing else to read .crumb files.
 dependencies = []
 
 [project.optional-dependencies]
-# The canonical crumb-format parser. Optional: if installed, CrumbLLM prefers
-# it so analysis tracks the upstream spec; if absent, the bundled reader is used.
-crumb-format = ["crumb-format>=1.1.0"]
 # Cloud providers work over stdlib HTTP, so no extra SDKs are required.
 # These extras are provided for users who prefer the official SDKs.
 openai = ["openai>=1.0"]

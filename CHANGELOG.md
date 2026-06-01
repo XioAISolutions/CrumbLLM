@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] - 2026-05-31
 
-Initial release of CrumbLLM as a standalone package.
+Initial release of CrumbLLM as a standalone, independent package.
 
 ### Added
 - AI analysis engine over CRUMB files and packs: `analyze`, `analyze-pack`,
@@ -20,9 +20,8 @@ Initial release of CrumbLLM as a standalone package.
 - Bundled CRUMB v1.1–v1.4 reader (`crumb_llm/crumb/spec.py`).
 
 ### Changed
-- **CrumbLLM is now standalone.** It no longer requires `crumb-format` at
-  runtime — `pip install crumb-llm` has zero required dependencies. When
-  `crumb-format` is installed (optional `[crumb-format]` extra) it is preferred
-  so analysis can track the upstream spec.
+- **CrumbLLM is fully independent of `crumb-format`.** It bundles its own CRUMB
+  reader and uses it exclusively — never importing, preferring, or requiring
+  `crumb-format`. `pip install crumb-llm` has zero required dependencies.
 
 [0.1.0]: https://github.com/XioAISolutions/CrumbLLM/releases/tag/v0.1.0

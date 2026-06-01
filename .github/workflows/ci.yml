@@ -25,19 +25,36 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install CrumbLLM (standalone — no crumb-format)
+      - name: Install CrumbLLM (independent — no crumb-format)
         run: python -m pip install -e .[dev]
 
-      - name: Enforce standalone — bundled CRUMB reader is active
+      - name: Enforce independence — bundled reader, no crumb-format imports
         run: |
           python - <<'PY'
-          from crumb_llm.crumb import parser_adapter as pa
-          fn = pa._resolve_parser()
-          where = f"{fn.__module__}.{fn.__name__}"
-          assert fn.__module__ == "crumb_llm.crumb.spec", (
-              f"expected the bundled reader, got {where} — crumb-format must not be a runtime dependency"
+          import sys
+          # crumb-format must not even be importable here, proving CrumbLLM
+          # never relies on it. Block it, then exercise the parse path.
+          import importlib.abc, importlib.machinery
+
+          class _Block(importlib.abc.MetaPathFinder):
+              def find_spec(self, name, path, target=None):
+                  if name in ("crumb_format", "cli", "cli.crumb"):
+                      raise ImportError(f"{name} is blocked: CrumbLLM must be independent")
+                  return None
+
+          sys.meta_path.insert(0, _Block())
+
+          from crumb_llm.crumb.loader import load_crumb_text
+          doc = load_crumb_text(
+              "BEGIN CRUMB\nv=1.2\nkind=task\nsource=ci\n---\n"
+              "[goal]\ng\n[context]\nc\n[constraints]\nn\nEND CRUMB"
           )
-          print("standalone OK:", where)
+          assert doc.kind == "task", doc.kind
+
+          # And confirm no crumb-format module slipped into the import graph.
+          leaked = [m for m in sys.modules if m == "crumb_format" or m.startswith("crumb_format.")]
+          assert not leaked, f"crumb-format leaked into sys.modules: {leaked}"
+          print("independence OK: parsed via bundled reader with crumb-format blocked")
           PY
 
       - name: Run tests

@@ -35,9 +35,8 @@ crumblm analyze path/to/session.crumb
 - **Not the CRUMB spec authority.** The canonical format, grammar, validator,
   linter, and base CLI live in
   [`crumb-format`](https://github.com/XioAISolutions/crumb-format). CrumbLLM
-  ships a small, faithful reader for the CRUMB wire format so it stays
-  standalone; if you want the canonical parser, `pip install
-  'crumb-llm[crumb-format]'` and CrumbLLM will prefer it automatically.
+  ships its own small, faithful reader for the CRUMB wire format and uses it
+  exclusively, so it is fully independent of `crumb-format`.
 - **Not session capture.** Capturing IBM Bob sessions and *generating* CRUMB
   packs is [`Crumb-Bob`](https://github.com/XioAISolutions)'s job. CrumbLLM only
   *reads* packs; it contains no Bob-specific logic.
@@ -51,9 +50,10 @@ crumblm analyze path/to/session.crumb
                    │ crumb-format                                │
                    │   CRUMB spec • parser • validator • linter  │
                    │   base `crumb` CLI                          │
-                   └───────────────┬────────────────────────────┘
-                                   │ spec authority (optional)
-        capture & generate         ▼                read & reason
+                   └────────────────────────────────────────────┘
+                          (canonical spec — separate project)
+
+        capture & generate                          read & reason
    ┌──────────────┐        ┌───────────────┐        (this repo)
    │  Crumb-Bob   │ ─────▶ │  .crumb files │ ─────▶ ┌─────────────┐
    │ IBM Bob      │  packs │   & packs     │        │  CrumbLLM   │
@@ -62,21 +62,20 @@ crumblm analyze path/to/session.crumb
 ```
 
 - **crumb-format** is the canonical home of the spec and the validation/linting
-  primitives. CrumbLLM does not depend on it at runtime.
+  primitives. CrumbLLM tracks the same wire format but does **not** depend on it.
 - **Crumb-Bob** turns IBM Bob sessions into `.crumb` files and packs.
 - **CrumbLLM** (this package) reads those artifacts and produces AI analysis.
 
-CrumbLLM resolves the parser through `crumb_llm/crumb/parser_adapter.py`: it
-uses its own bundled reader (`crumb_llm/crumb/spec.py`) by default, and prefers
-an installed `crumb-format` when present so it can track the upstream spec.
+CrumbLLM reads CRUMB through `crumb_llm/crumb/parser_adapter.py`, which uses its
+own bundled reader (`crumb_llm/crumb/spec.py`) exclusively. It never imports,
+prefers, or requires `crumb-format`.
 
 ---
 
 ## Install
 
 ```bash
-pip install crumb-llm                  # standalone — zero required deps
-pip install 'crumb-llm[crumb-format]'  # prefer the canonical crumb-format parser
+pip install crumb-llm                  # independent — zero required deps
 pip install 'crumb-llm[openai]'        # optional OpenAI SDK (not required)
 pip install 'crumb-llm[anthropic]'     # optional Anthropic SDK (not required)
 pip install 'crumb-llm[scratch]'       # EXPERIMENTAL local-from-scratch (torch)

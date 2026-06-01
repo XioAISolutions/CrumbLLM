@@ -9,7 +9,7 @@ from crumb_llm.models import CrumbDoc
 
 
 def load_crumb_text(text: str, path: str | None = None) -> CrumbDoc:
-    """Parse CRUMB text (via crumb-format) into a :class:`CrumbDoc`."""
+    """Parse CRUMB text into a :class:`CrumbDoc`."""
     parsed = parse_text(text)
     return CrumbDoc(
         path=path,
