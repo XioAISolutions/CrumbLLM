@@ -156,6 +156,37 @@ regression...
 
 ---
 
+## Semantic retrieval over large packs (optional turbovec)
+
+Long-lived projects accumulate hundreds of CRUMB files. Instead of stuffing the
+whole pack into one prompt, narrow it to the files relevant to a query with
+`--query`:
+
+```bash
+# Rank a pack's files by relevance — pure retrieval, no model call:
+crumblm search examples/pack --query "checkout latency" --top-k 5
+
+# Reason over only the relevant slice of a large pack:
+crumblm summarize examples/pack --query "tax rounding" --top-k 5
+crumblm risks     examples/pack --query "payment webhook" --format json
+```
+
+Retrieval is **zero-dependency by default** (a built-in feature-hashing embedder
+plus exact pure-Python cosine search). Install
+[turbovec](https://github.com/RyanCodrai/turbovec) to transparently switch to
+its memory-efficient quantized index for large packs:
+
+```bash
+pip install turbovec     # optional, like the provider SDKs
+```
+
+CrumbLLM never silently changes behaviour: when turbovec is absent it falls back
+to brute force and says so on stderr. See
+[`docs/turbovec-integration.md`](docs/turbovec-integration.md) for the design
+and a reciprocal proposal for the turbovec project.
+
+---
+
 ## Quality gates
 
 CrumbLLM **never silently trusts model output**. Each result is an

@@ -4,6 +4,20 @@ All notable changes to CrumbLLM are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Semantic retrieval over CRUMB packs (`crumb_llm/retrieval/`): a `search`
+  command and a `--query`/`--top-k` flag on `summarize`, `risks`, `next`, and
+  `analyze-pack` so tasks reason over only the relevant slice of a large pack.
+- Optional [turbovec](https://github.com/RyanCodrai/turbovec) backend for
+  memory-efficient quantized vector search, with a zero-dependency
+  feature-hashing embedder and pure-Python brute-force fallback. turbovec is
+  optional like the provider SDKs; when absent, retrieval falls back to brute
+  force and says so on stderr.
+- `docs/turbovec-integration.md`: integration design plus a reciprocal proposal
+  for the turbovec project.
+
 ## [0.1.0] - 2026-05-31
 
 Initial release of CrumbLLM as a standalone, independent package.
