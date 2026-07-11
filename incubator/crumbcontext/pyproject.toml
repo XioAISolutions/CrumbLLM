@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crumb-context"
+version = "0.1.0"
+description = "A safety-first context router that protects exact facts, compresses stale context, and produces measurable AI context bundles."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "XIO AI Solutions" }]
+keywords = ["ai", "llm", "context", "tokens", "memory", "crumb", "developer-tools"]
+dependencies = ["Pillow>=10.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+crumbcontext = "crumbcontext.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["crumbcontext*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
