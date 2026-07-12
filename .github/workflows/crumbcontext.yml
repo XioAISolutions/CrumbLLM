@@ -4,11 +4,19 @@ on:
   pull_request:
     paths:
       - "incubator/crumbcontext/**"
+      - "scripts/try-crumbcontext.sh"
+      - "README.md"
+      - "docs/assets/crumbcontext-*.svg"
+      - ".devcontainer/**"
       - ".github/workflows/crumbcontext.yml"
   push:
     branches: [main]
     paths:
       - "incubator/crumbcontext/**"
+      - "scripts/try-crumbcontext.sh"
+      - "README.md"
+      - "docs/assets/crumbcontext-*.svg"
+      - ".devcontainer/**"
       - ".github/workflows/crumbcontext.yml"
 
 jobs:
@@ -27,5 +35,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e '.[dev]'
       - run: pytest -q
-      - run: crumbcontext demo --out /tmp/crumbcontext-demo
-      - run: test -f /tmp/crumbcontext-demo/report.html
+      - run: crumbcontext benchmark --out /tmp/crumbcontext-proof
+      - run: test -f /tmp/crumbcontext-proof/report.html
+      - run: test -f /tmp/crumbcontext-proof/share-card.svg
+      - run: python -c "import json; assert json.load(open('/tmp/crumbcontext-proof/benchmark.json'))['passed']"

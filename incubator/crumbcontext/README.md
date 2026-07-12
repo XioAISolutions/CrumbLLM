@@ -1,36 +1,54 @@
-# CrumbContext
+# CrumbContext 🧠🧱
 
-**Give every AI the context it needs—not the entire conversation.**
+> **Give every AI the context it needs—not the entire conversation.**
 
-CrumbContext is a safety-first context router for long AI sessions. It protects exact facts and authority boundaries first, then routes stale context into the cheapest appropriate representation: provider cache, CRUMB memory, sanitized images, or deterministic summaries.
+CrumbContext is a safety-first context router for long AI sessions. It protects exact facts and authority boundaries first, then routes stale context into the best representation: exact text, provider cache, CRUMB memory, sanitized images, or deterministic summaries.
+
+## Run the proof
 
 ```bash
-pip install -e .
-crumbcontext demo --out demo
-open demo/report.html
+python -m pip install -e '.[dev]'
+crumbcontext benchmark --out proof --open
 ```
 
-The demo produces a screenshot-ready report plus the actual routed artifacts:
+You get:
 
 ```text
-demo/
-├── report.html
-├── plan.json
-├── anchors-all.txt
-├── images/
-├── crumbs/
-└── summaries/
+proof/
+├── report.html          # inspect every decision
+├── share-card.svg       # share the result
+├── benchmark.json       # self-check outcome
+├── plan.json            # machine-readable routing plan
+├── images/              # sanitized historical context
+├── crumbs/              # exact anchors + structured memory
+└── summaries/           # deterministic stale-context summaries
 ```
 
-## Why this exists
+Typical bundled fixture:
 
-Visual context compression can be powerful, but it is lossy. Exact identifiers, hashes, paths, amounts, citations, and instructions should not depend on visual recall. CrumbContext extracts those values into native-text CRUMB sidecars before any image or summary transform.
+```text
+CrumbContext benchmark: PASS
+Estimated tokens: 18,687 -> 6,392 (65.8% reduction)
+Exact anchors: 31/31 preserved
+```
 
-It also refuses to blur authority boundaries: system/developer instructions, policy blocks, approvals, citations, and current turns remain exact text.
+> These are deterministic planning estimates, not provider billing records. A public savings claim requires a same-request provider counterfactual.
 
-## Route your own transcript
+## Pick a mission
 
-Create a JSON file containing context blocks:
+<details open>
+<summary><strong>See the demo</strong></summary>
+
+```bash
+crumbcontext demo --out demo --open
+```
+
+</details>
+
+<details>
+<summary><strong>Route your own transcript</strong></summary>
+
+Create a JSON file:
 
 ```json
 {
@@ -46,26 +64,56 @@ Then:
 
 ```bash
 crumbcontext analyze transcript.json
-crumbcontext route transcript.json --out routed
+crumbcontext route transcript.json --out routed --open
 ```
+
+</details>
+
+<details>
+<summary><strong>Test without image routing</strong></summary>
+
+```bash
+crumbcontext benchmark --no-images --out proof-text-only
+```
+
+This is useful for comparing summary/cache routing against the image lane.
+
+</details>
+
+## The rule that matters
+
+**Exact facts never depend on pixels.**
+
+Before any lossy transform, CrumbContext extracts:
+
+- paths;
+- hashes and long hex values;
+- UUIDs;
+- URLs and emails;
+- dates and timestamps;
+- currency amounts;
+- environment variables;
+- long numeric identifiers.
+
+Those values go into native-text CRUMB sidecars. Images and summaries receive stable labels such as `[EXACT_7:sha_or_hex]` instead of the original value.
 
 ## Routing lanes
 
 | Lane | Use |
 |---|---|
-| `exact` | System/developer/current/precision-critical context |
-| `cache` | Stable context reused across requests |
-| `crumb` | Structured project memory and handoffs |
-| `image` | Old dense logs or tool output, after exact values are removed |
-| `summary` | Old semantic context that does not need verbatim wording |
+| `exact` | system/developer/current/precision-critical context |
+| `cache` | stable context reused across requests |
+| `crumb` | structured project memory and handoffs |
+| `image` | old dense logs or tool output, after exact values are removed |
+| `summary` | old semantic context that does not need verbatim wording |
 
 Every decision includes a reason in `plan.json`.
 
 ## Honest status
 
-v0.1 is a working provider-neutral router, artifact generator, and benchmark/report surface. It is **not yet a transparent network proxy**. Provider adapters will only be added where role and authority semantics can be preserved; CrumbContext will not move system instructions into user content merely to compress them.
+v0.1 is a working provider-neutral router, artifact generator, self-verifying benchmark, and report surface. It is **not yet a transparent network proxy**.
 
-Token counts are deterministic estimates for A/B planning, not billing claims. A public savings claim requires a provider-specific counterfactual benchmark against the exact same requests.
+Provider adapters will only be added where role and authority semantics can be preserved. CrumbContext will not move system instructions into user content merely to gain image support.
 
 ## Relationship to CRUMB
 
@@ -78,8 +126,10 @@ Token counts are deterministic estimates for A/B planning, not billing claims. A
 
 ```bash
 python -m pip install -e '.[dev]'
-pytest
-crumbcontext demo --out demo
+pytest -q
+crumbcontext benchmark --out proof
 ```
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for routing invariants and [`docs/LAUNCH.md`](docs/LAUNCH.md) for release gates.
 
 MIT © XIO AI Solutions
