@@ -5,7 +5,7 @@ from crumbcontext.benchmark import run_benchmark
 from crumbcontext.bundle import route_to_directory
 from crumbcontext.demo import demo_payload
 from crumbcontext.models import ContextBlock, Lane
-from crumbcontext.router import route_blocks
+from crumbcontext.router import RouterConfig, route_blocks
 
 
 def test_extracts_and_sanitizes_exact_values():
@@ -103,3 +103,10 @@ def test_benchmark_self_verifies_and_writes_share_card(tmp_path: Path):
     assert "CRUMBCONTEXT BENCHMARK" in (
         tmp_path / "share-card.svg"
     ).read_text(encoding="utf-8")
+
+
+def test_benchmark_honors_text_only_policy(tmp_path: Path):
+    result = run_benchmark(tmp_path, RouterConfig(vision_allowed=False))
+    assert result.passed
+    assert result.checks["image_policy_honored"]
+    assert not any((tmp_path / "images").glob("*.png"))
