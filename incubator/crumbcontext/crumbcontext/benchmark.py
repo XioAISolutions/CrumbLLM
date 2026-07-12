@@ -68,14 +68,18 @@ def _write_share_card(result: BenchmarkResult, path: Path) -> None:
     path.write_text(svg, encoding="utf-8")
 
 
-def run_benchmark(output_dir: Path, config: RouterConfig | None = None) -> BenchmarkResult:
+def run_benchmark(
+    output_dir: Path,
+    config: RouterConfig | None = None,
+) -> BenchmarkResult:
     """Run the reproducible offline benchmark and verify its own artifacts."""
 
+    resolved_config = config or RouterConfig()
     output_dir.mkdir(parents=True, exist_ok=True)
     fixture = output_dir / "benchmark-input.json"
     write_demo(fixture)
     blocks = load_blocks(fixture)
-    plan = route_to_directory(blocks, output_dir, config or RouterConfig())
+    plan = route_to_directory(blocks, output_dir, resolved_config)
 
     expected = {
         (anchor.kind, anchor.value)
@@ -86,7 +90,11 @@ def run_benchmark(output_dir: Path, config: RouterConfig | None = None) -> Bench
         path.read_text(encoding="utf-8")
         for path in sorted((output_dir / "crumbs").glob("*-anchors.crumb"))
     )
-    preserved = {(kind, value) for kind, value in expected if value in sidecars}
+    preserved = {
+        (kind, value)
+        for kind, value in expected
+        if value in sidecars
+    }
 
     plan_by_id = {item.block_id: item for item in plan.blocks}
     authority_exact = all(
@@ -99,11 +107,15 @@ def run_benchmark(output_dir: Path, config: RouterConfig | None = None) -> Bench
         for block in blocks
         if block.age_turns <= 2
     )
+    image_exists = any((output_dir / "images").glob("*.png"))
+    image_policy_honored = (
+        image_exists if resolved_config.vision_allowed else not image_exists
+    )
     checks = {
         "all_exact_anchors_preserved": preserved == expected,
         "authority_blocks_stay_exact": authority_exact,
         "recent_turns_stay_exact": recent_exact,
-        "image_artifact_created": any((output_dir / "images").glob("*.png")),
+        "image_policy_honored": image_policy_honored,
         "routing_plan_created": (output_dir / "plan.json").is_file(),
         "interactive_report_created": (output_dir / "report.html").is_file(),
     }
@@ -118,7 +130,8 @@ def run_benchmark(output_dir: Path, config: RouterConfig | None = None) -> Bench
         exact_anchors_preserved=len(preserved),
     )
     (output_dir / "benchmark.json").write_text(
-        json.dumps(result.to_dict(), indent=2), encoding="utf-8"
+        json.dumps(result.to_dict(), indent=2),
+        encoding="utf-8",
     )
     _write_share_card(result, output_dir / "share-card.svg")
     return result
