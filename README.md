@@ -1,280 +1,232 @@
+# CrumbLLM 🥖🧠
+
 <p align="center">
-  <img src="docs/assets/crumbcontext-hero.svg" alt="CrumbContext routes long AI context while protecting exact facts" width="100%" />
+  <strong>Turn portable CRUMB memory into grounded summaries, risks, next actions, and better handoffs.</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/XioAISolutions/CrumbLLM/actions/workflows/crumbcontext.yml"><img alt="CrumbContext CI" src="https://github.com/XioAISolutions/CrumbLLM/actions/workflows/crumbcontext.yml/badge.svg"></a>
-  <a href="https://github.com/XioAISolutions/CrumbLLM/actions/workflows/ci.yml"><img alt="CrumbLLM CI" src="https://github.com/XioAISolutions/CrumbLLM/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/XioAISolutions/CrumbLLM/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/XioAISolutions/CrumbLLM/actions/workflows/ci.yml/badge.svg"></a>
   <img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white">
-  <img alt="Runs locally" src="https://img.shields.io/badge/cloud-key%20optional-53f2a3">
-  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-8b5cf6">
+  <img alt="Zero required dependencies" src="https://img.shields.io/badge/required%20dependencies-0-53f2a3">
+  <img alt="MIT" src="https://img.shields.io/badge/license-MIT-8b5cf6">
 </p>
 
-<p align="center">
-  <strong>The open context stack for AI agents.</strong><br>
-  CrumbContext decides what must stay exact, what belongs in memory, and what can be compressed.<br>
-  CrumbLLM reads the resulting CRUMBs and turns them into useful work.
-</p>
+> **Looking for context routing and token optimization?** CrumbContext now lives in its own standalone repository: [`XioAISolutions/CrumbContext`](https://github.com/XioAISolutions/CrumbContext).
 
-<p align="center">
-  <a href="https://codespaces.new/XioAISolutions/CrumbLLM?quickstart=1"><strong>Open in Codespaces</strong></a>
-  ·
-  <a href="#-try-it-now"><strong>Run the benchmark</strong></a>
-  ·
-  <a href="#-bring-your-own-context"><strong>Route your transcript</strong></a>
-  ·
-  <a href="https://github.com/XioAISolutions/crumb-format"><strong>Read the CRUMB spec</strong></a>
-</p>
-
----
-
-## ⚡ Try it now
-
-Clone the repo and run one command:
+CrumbLLM is the reasoning engine in the CRUMB ecosystem. It reads individual `.crumb` files or complete CRUMB packs and produces useful, inspectable work without silently trusting model output.
 
 ```bash
-bash scripts/try-crumbcontext.sh
+pip install crumb-llm
+crumblm analyze examples/basic.crumb
 ```
 
-CrumbContext creates a local proof bundle and opens an interactive report:
+## What it does
 
-```text
-crumbcontext-proof/
-├── report.html          ← inspect every routing decision
-├── share-card.svg       ← post the result
-├── benchmark.json       ← machine-readable self-check
-├── plan.json            ← lane, reason, and token estimate per block
-├── images/              ← sanitized historical context
-├── crumbs/              ← exact anchors and structured memory
-└── summaries/           ← deterministic stale-context summaries
-```
+- analyzes a single CRUMB or a directory of linked CRUMBs;
+- summarizes project memory;
+- identifies risks and unresolved constraints;
+- proposes concrete next actions;
+- improves handoffs for the next agent or human;
+- exports CRUMB collections as training-ready JSONL;
+- runs with cloud models, local model servers, or the built-in offline mock provider.
 
-Typical bundled demo result:
+Every result passes quality gates for invalid JSON, hallucinated paths, empty output, and generic non-answers.
 
-```text
-CrumbContext benchmark: PASS
-Estimated tokens: 18,687 -> 6,392 (65.8% reduction)
-Exact anchors: 31/31 preserved
-```
-
-> **Honest benchmark note:** these are deterministic planning estimates, not provider billing records. CrumbContext refuses to turn an estimate into a fake savings claim.
-
-## 🧠 What just happened?
-
-CrumbContext examined each context block and chose a lane based on authority, recency, structure, density, and reuse.
-
-| Lane | What goes there | Why |
-|---|---|---|
-| `exact` | system/developer instructions, current turns, policies, approvals | authority cannot become fuzzy |
-| `cache` | stable reference material used repeatedly | reuse beats retransmission |
-| `crumb` | project memory, handoffs, maps, decisions | structured context survives tool switching |
-| `image` | old dense logs and tool output | compact, but only after exact values are removed |
-| `summary` | old semantic context | preserve meaning without carrying every word |
-
-Before any lossy transform, CrumbContext extracts paths, hashes, UUIDs, URLs, emails, dates, amounts, environment variables, and long identifiers into native-text **exact-anchor CRUMBs**.
-
-```mermaid
-flowchart LR
-    A[Long AI session] --> B{CrumbContext router}
-    B -->|authority / recent / exact values| C[Exact text]
-    B -->|stable + reused| D[Provider cache]
-    B -->|memory + handoff| E[CRUMB]
-    B -->|old + dense| F[Sanitized image]
-    B -->|old + semantic| G[Summary]
-    C --> H[Model-ready context bundle]
-    D --> H
-    E --> H
-    F --> H
-    G --> H
-    H --> I[CrumbLLM analysis]
-```
-
-## 🎮 Pick your path
+## Pick a path
 
 <details open>
-<summary><strong>I want the fastest possible demo</strong></summary>
+<summary><strong>Analyze one CRUMB</strong></summary>
 
 ```bash
-bash scripts/try-crumbcontext.sh
-```
-
-Or click **Open in Codespaces**, then run:
-
-```bash
-crumbcontext benchmark --out proof --open
+crumblm analyze examples/basic.crumb
 ```
 
 </details>
 
 <details>
-<summary><strong>I want to route my own context</strong></summary>
-
-Create `transcript.json`:
-
-```json
-{
-  "blocks": [
-    {
-      "id": "system",
-      "role": "system",
-      "kind": "instruction",
-      "content": "Never deploy without approval.",
-      "authoritative": true
-    },
-    {
-      "id": "old-log",
-      "role": "user",
-      "kind": "tool_result",
-      "content": "...large historical output...",
-      "age_turns": 12
-    },
-    {
-      "id": "now",
-      "role": "user",
-      "kind": "message",
-      "content": "Fix the test and preserve SHA abcdef1234567890.",
-      "age_turns": 0
-    }
-  ]
-}
-```
-
-Then run:
+<summary><strong>Analyze a complete project pack</strong></summary>
 
 ```bash
-cd incubator/crumbcontext
-python -m pip install -e .
-crumbcontext analyze ../../transcript.json
-crumbcontext route ../../transcript.json --out ../../routed --open
-```
-
-</details>
-
-<details>
-<summary><strong>I want AI to understand a CRUMB pack</strong></summary>
-
-```bash
-pip install crumb-llm
-crumblm analyze path/to/session.crumb
-crumblm analyze-pack path/to/crumb-pack
-crumblm risks path/to/crumb-pack --format json
-crumblm next path/to/crumb-pack
-```
-
-CrumbLLM supports OpenAI, Anthropic, Ollama, LM Studio, and a built-in offline mock provider. It bundles its own CRUMB reader and requires no cloud key for the default path.
-
-</details>
-
-<details>
-<summary><strong>I want to build a provider adapter</strong></summary>
-
-Start with the invariants in [`incubator/crumbcontext/docs/ARCHITECTURE.md`](incubator/crumbcontext/docs/ARCHITECTURE.md):
-
-1. Never move system authority into ordinary user content.
-2. Extract exact anchors before summaries or images.
-3. Label compressed history as non-authoritative.
-4. Measure the same request before and after routing.
-5. Fall back to exact text when confidence drops.
-
-The next high-value adapters are Anthropic Messages, OpenAI Responses, and an OpenClaw localhost bridge.
-
-</details>
-
-## 🧩 Two products, one context stack
-
-### CrumbContext — route before you reason
-
-The launch candidate lives in [`incubator/crumbcontext/`](incubator/crumbcontext/).
-
-```bash
-cd incubator/crumbcontext
-python -m pip install -e '.[dev]'
-pytest -q
-crumbcontext benchmark --out proof
-```
-
-It is currently a provider-neutral router and artifact generator—not yet a transparent network proxy. That boundary is deliberate: provider adapters will only ship when role and authority semantics can be preserved.
-
-### CrumbLLM — reason over portable memory
-
-CrumbLLM reads individual `.crumb` files or CRUMB packs and produces:
-
-- summaries;
-- risk analysis;
-- next actions;
-- improved handoffs;
-- structured JSON;
-- dataset exports.
-
-```bash
-pip install crumb-llm
-crumblm setup local --backend ollama --model llama3.1
 crumblm analyze-pack examples/pack
+crumblm risks examples/pack --format json
+crumblm next examples/pack
 ```
 
-Every result carries quality-gate warnings for invalid JSON, hallucinated paths, empty output, and generic non-answers.
+</details>
 
-## 🥖 The CRUMB ecosystem
+<details>
+<summary><strong>Improve a handoff</strong></summary>
+
+```bash
+crumblm improve examples/basic.crumb --out improved.txt
+```
+
+</details>
+
+<details>
+<summary><strong>Use local AI without a cloud key</strong></summary>
+
+```bash
+crumblm setup local --backend ollama --model <local-model>
+# or
+crumblm setup local --backend lmstudio --model <local-model>
+
+crumblm status
+crumblm analyze examples/basic.crumb
+```
+
+</details>
+
+<details>
+<summary><strong>Export training data</strong></summary>
+
+```bash
+crumblm export-dataset path/to/crumbs --out data/crumb_training.jsonl
+```
+
+</details>
+
+## Install
+
+```bash
+pip install crumb-llm
+```
+
+Optional extras:
+
+```bash
+pip install 'crumb-llm[openai]'
+pip install 'crumb-llm[anthropic]'
+pip install 'crumb-llm[scratch]'
+```
+
+CrumbLLM communicates with supported cloud and local-server providers through standard HTTP, so provider SDKs are optional rather than required.
+
+## Providers
+
+| Provider | Runs where | Key required? |
+|---|---|---:|
+| `mock` | built into CrumbLLM | no |
+| `ollama` | local server | no |
+| `lmstudio` | local server | no |
+| `openai` | cloud | yes |
+| `anthropic` | cloud | yes |
+| `scratch` | local experimental model | no |
+
+The default mock path makes the package runnable in tests and demonstrations without external services.
+
+> 🔒 Provider keys are read from environment variables at call time. `crumblm setup` stores only non-secret routing configuration.
+
+## Commands
+
+```bash
+# Analyze one CRUMB
+crumblm analyze examples/basic.crumb
+
+# Analyze a pack
+crumblm analyze-pack examples/pack
+
+# Create a project summary
+crumblm summarize examples/pack --out summary.md
+
+# Classify risks
+crumblm risks examples/basic.crumb --format text
+crumblm risks examples/pack --format json
+
+# Recommend next actions
+crumblm next examples/pack
+
+# Improve a handoff
+crumblm improve examples/basic.crumb --out improved.txt
+
+# Export a dataset
+crumblm export-dataset path/to/crumbs --out data/crumb_training.jsonl
+```
+
+Every analysis command accepts either a `.crumb` file or a directory containing CRUMB files where applicable. Warnings are printed to stderr and included in JSON output.
+
+## Quality gates
+
+CrumbLLM never treats model output as automatically trustworthy. Each `AnalysisResult` includes warnings generated by checks for:
+
+- **JSON validity** — structured output must parse;
+- **hallucinated paths** — file paths are compared with paths found in the source CRUMB;
+- **empty or generic output** — boilerplate and unusably short answers are flagged.
+
+```python
+from crumb_llm.crumb.loader import load_crumb
+from crumb_llm.engine import CrumbEngine
+
+result = CrumbEngine().analyze(load_crumb("examples/basic.crumb"))
+print(result.text)
+print(result.warnings)
+print(result.ok)
+```
+
+## How the CRUMB projects fit together
 
 ```text
-Crumb-Bob  ──captures sessions──▶  .crumb files
+Crumb-Bob ──captures sessions──▶ .crumb files and packs
                                       │
-crumb-format ──validates/specifies────┤
+crumb-format ──specifies + validates──┤
                                       ▼
 CrumbContext ──routes + protects──▶ model-ready context
                                       │
                                       ▼
-CrumbLLM ──summarizes / checks / plans / improves handoffs
+CrumbLLM ──summarizes · checks · plans · improves handoffs
 ```
 
-| Project | Job |
+| Project | Responsibility |
 |---|---|
-| [`crumb-format`](https://github.com/XioAISolutions/crumb-format) | portable format, parser, validator, linter, CLI |
+| [`crumb-format`](https://github.com/XioAISolutions/crumb-format) | canonical format, parser, validator, linter, base CLI |
 | [`Crumb-Bob`](https://github.com/XioAISolutions/Crumb-Bob) | session capture and CRUMB generation |
-| **CrumbContext** | context routing, exact-anchor protection, proof bundles |
-| **CrumbLLM** | local/cloud analysis over CRUMB files and packs |
+| [`CrumbContext`](https://github.com/XioAISolutions/CrumbContext) | safety-first context routing and exact-anchor protection |
+| **CrumbLLM** | local/cloud reasoning over CRUMB files and packs |
 
-## 🧪 Build challenge
+CrumbLLM bundles its own small CRUMB reader and does not require `crumb-format` at runtime. The projects remain independently installable with clean boundaries.
 
-Try to break the router with:
+## What CrumbLLM is not
 
-- confusing hashes such as `0O5S8B`;
-- URLs containing long numeric IDs;
-- repeated exact values across large logs;
-- stale instructions that conflict with a current request;
-- huge sparse prose that should not become an image;
-- dense JSON that should.
+- It is not the canonical CRUMB specification.
+- It does not capture sessions.
+- It does not automatically train models.
+- Its experimental scratch model is not production-grade.
+- It does not replace CrumbContext's routing and exactness layer.
 
-Found a failure? Open an issue with the smallest reproducible fixture. A useful adversarial test is worth more than another feature checkbox.
-
-## 🗺️ Launch roadmap
-
-- [x] safety-first lane router
-- [x] exact-anchor CRUMB sidecars
-- [x] sanitized PNG context pages
-- [x] deterministic summaries
-- [x] interactive HTML report
-- [x] self-verifying offline benchmark
-- [x] shareable proof card
-- [ ] same-request provider counterfactual harness
-- [ ] Anthropic Messages adapter
-- [ ] OpenAI Responses adapter
-- [ ] local OCR/VLM render verification
-- [ ] standalone `CrumbContext` repository and package release
-
-## 🤝 Contributing
-
-The project is small enough to understand and weird enough to matter. Start with:
+## Development
 
 ```bash
 git clone https://github.com/XioAISolutions/CrumbLLM.git
-cd CrumbLLM/incubator/crumbcontext
+cd CrumbLLM
 python -m pip install -e '.[dev]'
-pytest -q
-crumbcontext benchmark --out proof
+pytest
+crumblm analyze examples/basic.crumb
 ```
 
-Good first contributions: new exact-anchor patterns, adversarial fixtures, routing heuristics, provider adapters, and clearer benchmark visualizations.
+The CI suite tests Python 3.10–3.12, enforces independence from `crumb-format`, builds the distribution, verifies the zero-required-dependency wheel, installs it offline, and smoke-tests the CLI.
+
+## Experimental scratch model
+
+The `scratch` provider is deliberately opt-in and requires PyTorch plus a compatible checkpoint.
+
+```bash
+pip install 'crumb-llm[scratch]'
+```
+
+Training never starts automatically and requires explicit confirmation. Treat this path as a research toy; use a supported cloud or local-server provider for serious work.
+
+## Contributing
+
+Useful contributions include:
+
+- stronger quality gates;
+- additional provider adapters;
+- adversarial CRUMB fixtures;
+- better pack-level reasoning;
+- improved structured-output validation;
+- clearer local-model setup and diagnostics.
+
+Keep CrumbLLM focused on reasoning over CRUMB artifacts. Context routing contributions belong in [`CrumbContext`](https://github.com/XioAISolutions/CrumbContext), while grammar and validation changes belong in [`crumb-format`](https://github.com/XioAISolutions/crumb-format).
 
 ## License
 
