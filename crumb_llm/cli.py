@@ -13,11 +13,29 @@ from crumb_llm.crumb.writer import dumps_json, write_output
 from crumb_llm.engine import CrumbEngine
 from crumb_llm.models import CrumbDoc, CrumbPack, ProviderConfig
 from crumb_llm.providers import get_provider
+from crumb_llm.retrieval import CrumbRetriever, focus_pack
 
 
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
+def _add_query_args(parser: argparse.ArgumentParser) -> None:
+    """Add the shared retrieval flags to a pack-capable subcommand."""
+    parser.add_argument(
+        "--query",
+        default=None,
+        help="Only reason over the pack files most relevant to this query "
+        "(uses turbovec when installed, else a built-in search)",
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=5,
+        dest="top_k",
+        help="Number of files to keep when --query is used (default: 5)",
+    )
+
 
 def _build_engine() -> CrumbEngine:
     """Build the engine from saved config, falling back to the mock provider."""
@@ -31,6 +49,30 @@ def _load_source(path: str) -> CrumbDoc | CrumbPack:
     if p.is_dir():
         return read_pack(p)
     return load_crumb(p)
+
+
+def _maybe_focus(source, query: str | None, top_k: int):
+    """Optionally narrow a pack to the files most relevant to ``query``.
+
+    Only applies when ``--query`` is given and the source is a pack; a single
+    CRUMB file is returned unchanged (with a note). Returns the (possibly
+    narrowed) source — retrieval warnings are printed to stderr here so callers
+    stay honest about which search backend ran.
+    """
+    if not query:
+        return source
+    if not isinstance(source, CrumbPack):
+        print("warning: --query is ignored for a single CRUMB file", file=sys.stderr)
+        return source
+    focused, warnings = focus_pack(source, query, k=top_k)
+    for warning in warnings:
+        print(f"warning: {warning}", file=sys.stderr)
+    print(
+        f"retrieval: selected {len(focused)} of {len(source)} files "
+        f"for query {query!r}",
+        file=sys.stderr,
+    )
+    return focused
 
 
 def _emit(result, out: str | None, as_json: bool = False) -> int:
@@ -65,27 +107,47 @@ def cmd_analyze_pack(args) -> int:
     pack = read_pack(args.pack_dir)
     if len(pack) == 0:
         print(f"warning: no .crumb files found in {args.pack_dir}", file=sys.stderr)
+    pack = _maybe_focus(pack, args.query, args.top_k)
     result = _build_engine().analyze_pack(pack)
     return _emit(result, args.out)
 
 
 def cmd_summarize(args) -> int:
-    source = _load_source(args.source)
+    source = _maybe_focus(_load_source(args.source), args.query, args.top_k)
     result = _build_engine().summarize(source)
     return _emit(result, args.out)
 
 
 def cmd_risks(args) -> int:
-    source = _load_source(args.source)
+    source = _maybe_focus(_load_source(args.source), args.query, args.top_k)
     as_json = args.format == "json"
     result = _build_engine().risks(source, as_json=as_json)
     return _emit(result, args.out, as_json=as_json)
 
 
 def cmd_next(args) -> int:
-    source = _load_source(args.source)
+    source = _maybe_focus(_load_source(args.source), args.query, args.top_k)
     result = _build_engine().next_actions(source)
     return _emit(result, args.out)
+
+
+def cmd_search(args) -> int:
+    """Rank a pack's CRUMB files by relevance to a query (no LLM call)."""
+    pack = read_pack(args.pack_dir)
+    if len(pack) == 0:
+        print(f"warning: no .crumb files found in {args.pack_dir}", file=sys.stderr)
+        return 1
+    retriever = CrumbRetriever().index_pack(pack)
+    for warning in retriever.warnings:
+        print(f"warning: {warning}", file=sys.stderr)
+    hits = retriever.retrieve(args.query, k=args.top_k)
+    lines = [f"# search backend: {retriever.backend_name}", ""]
+    for rank, hit in enumerate(hits, start=1):
+        name = Path(hit.doc.path).name if hit.doc.path else "(memory)"
+        title = hit.doc.title or hit.doc.kind
+        lines.append(f"{rank}. [{hit.score:.4f}] {name} — {title}")
+    write_output("\n".join(lines), args.out)
+    return 0
 
 
 def cmd_improve(args) -> int:
@@ -170,24 +232,38 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("analyze-pack", help="Analyze a CRUMB pack (directory)")
     p.add_argument("pack_dir")
+    _add_query_args(p)
     p.add_argument("--out")
     p.set_defaults(func=cmd_analyze_pack)
 
     p = sub.add_parser("summarize", help="Summarize a CRUMB file or pack")
     p.add_argument("source")
+    _add_query_args(p)
     p.add_argument("--out")
     p.set_defaults(func=cmd_summarize)
 
     p = sub.add_parser("risks", help="Classify risks in a CRUMB file or pack")
     p.add_argument("source")
+    _add_query_args(p)
     p.add_argument("--format", choices=["text", "json"], default="text")
     p.add_argument("--out")
     p.set_defaults(func=cmd_risks)
 
     p = sub.add_parser("next", help="List next actions for a CRUMB file or pack")
     p.add_argument("source")
+    _add_query_args(p)
     p.add_argument("--out")
     p.set_defaults(func=cmd_next)
+
+    p = sub.add_parser(
+        "search",
+        help="Rank a pack's files by relevance to a query (no LLM call)",
+    )
+    p.add_argument("pack_dir")
+    p.add_argument("--query", required=True, help="Search query")
+    p.add_argument("--top-k", type=int, default=5, dest="top_k")
+    p.add_argument("--out")
+    p.set_defaults(func=cmd_search)
 
     p = sub.add_parser("improve", help="Improve a CRUMB handoff")
     p.add_argument("crumb_file")
