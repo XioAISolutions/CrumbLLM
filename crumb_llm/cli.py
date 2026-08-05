@@ -13,6 +13,7 @@ from crumb_llm.crumb.writer import dumps_json, write_output
 from crumb_llm.engine import CrumbEngine
 from crumb_llm.models import CrumbDoc, CrumbPack, ProviderConfig
 from crumb_llm.providers import get_provider
+from crumb_llm.eja.cli import register_eja_subparser
 
 
 # ---------------------------------------------------------------------------
@@ -45,7 +46,6 @@ def _emit(result, out: str | None, as_json: bool = False) -> int:
 
     for warning in result.warnings:
         print(f"warning: {warning}", file=sys.stderr)
-    # Provider failure is the one warning class that should fail the command.
     if any(w.startswith("provider error") for w in result.warnings):
         return 1
     return 0
@@ -100,8 +100,7 @@ def _save_provider(cfg: ProviderConfig) -> int:
     env = config_mod.PROVIDER_ENV.get(cfg.provider)
     if env:
         present = "set" if _env_present(env) else "NOT set"
-        print(f"Reminder: export {env} (currently {present}). "
-              "Secrets are never written to config.")
+        print(f"Reminder: export {env} (currently {present}). Secrets are never written to config.")
     return 0
 
 
@@ -115,9 +114,7 @@ def cmd_setup(args) -> int:
     if args.target == "openai":
         return _save_provider(ProviderConfig(provider="openai", model=args.model or ""))
     if args.target == "anthropic":
-        return _save_provider(
-            ProviderConfig(provider="anthropic", model=args.model or "")
-        )
+        return _save_provider(ProviderConfig(provider="anthropic", model=args.model or ""))
     if args.target == "local":
         backend = args.backend
         if backend not in {"ollama", "lmstudio"}:
@@ -125,9 +122,7 @@ def cmd_setup(args) -> int:
             return 2
         provider = "ollama" if backend == "ollama" else "lmstudio"
         return _save_provider(
-            ProviderConfig(
-                provider=provider, model=args.model or "", backend=backend
-            )
+            ProviderConfig(provider=provider, model=args.model or "", backend=backend)
         )
     print(f"error: unknown setup target: {args.target}", file=sys.stderr)
     return 2
@@ -156,8 +151,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="crumblm",
         description=(
             "CrumbLLM — AI analysis over CRUMB files and packs. Reads project "
-            "memory and produces summaries, risks, next actions, and improved "
-            "handoffs."
+            "memory and produces summaries, risks, next actions, and improved handoffs."
         ),
     )
     parser.add_argument("--version", action="version", version=f"crumblm {__version__}")
@@ -212,6 +206,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", default="data/crumb_training.jsonl")
     p.set_defaults(func=cmd_export_dataset)
 
+    register_eja_subparser(sub)
     return parser
 
 
@@ -224,7 +219,7 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
-    except Exception as exc:  # surface, never silently swallow
+    except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

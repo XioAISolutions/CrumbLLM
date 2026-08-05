@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xioai.co/schemas/eja-experiment-v1.schema.json",
+  "title": "CRUMB EJA Experiment v1",
+  "type": "object",
+  "required": [
+    "crumb_version",
+    "artifact_type",
+    "experiment",
+    "experience",
+    "surprise",
+    "hypotheses",
+    "trajectories",
+    "candidate_axiom",
+    "verification",
+    "provenance"
+  ],
+  "properties": {
+    "crumb_version": {"const": "1.5"},
+    "artifact_type": {"const": "eja_experiment"},
+    "experiment": {
+      "type": "object",
+      "required": ["id", "world", "deterministic_seed"]
+    },
+    "experience": {
+      "type": "object",
+      "required": ["initial_observations"]
+    },
+    "surprise": {
+      "type": "object",
+      "required": ["type", "description"]
+    },
+    "hypotheses": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "class", "statement", "assumptions", "falsifiers"]
+      }
+    },
+    "trajectories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["intervention", "observations"]
+      }
+    },
+    "candidate_axiom": {
+      "type": ["object", "null"],
+      "required": ["id", "statement", "assumptions", "falsifiers", "excluded_claims"]
+    },
+    "verification": {
+      "type": "object",
+      "required": ["verdict"]
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["artifact_hash", "hidden_state_exposed_to_agent"],
+      "properties": {
+        "hidden_state_exposed_to_agent": {"const": false}
+      }
+    }
+  }
+}
