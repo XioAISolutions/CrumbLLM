@@ -53,11 +53,41 @@
       "type": "object",
       "required": ["verdict"]
     },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "discovery_complete": {"type": "boolean"},
+        "experiments_run": {"type": "integer", "minimum": 0},
+        "local_invariance_tests": {"type": "integer", "minimum": 0},
+        "scope_boundary_observed": {"type": "boolean"},
+        "winner": {"type": "string"},
+        "winner_score": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "salience_memory": {
+      "type": "object",
+      "properties": {
+        "before": {"type": "object"},
+        "after": {"type": "object"}
+      }
+    },
     "provenance": {
       "type": "object",
       "required": ["artifact_hash", "hidden_state_exposed_to_agent"],
       "properties": {
-        "hidden_state_exposed_to_agent": {"const": false}
+        "artifact_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "hidden_state_exposed_to_agent": {"const": false},
+        "parent_artifact_hashes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
       }
     }
   }
