@@ -8,6 +8,13 @@ from .audit import (
     render_lineage_html,
     write_html_report,
 )
+from .evidence import (
+    audit_evidence_artifact,
+    audit_evidence_pack,
+    build_evidence_graph,
+    build_review_bundle,
+    render_evidence_html,
+)
 from .model import (
     ValidationIssue,
     ValidationReport,
@@ -31,14 +38,19 @@ __all__ = [
     "ValidationIssue",
     "ValidationReport",
     "artifact_hash",
+    "audit_evidence_artifact",
+    "audit_evidence_pack",
     "audit_pack",
+    "build_evidence_graph",
     "build_lineage",
     "build_manifest",
+    "build_review_bundle",
     "compare_artifacts",
     "discover_artifacts",
     "dump_artifact",
     "load_artifact",
     "render_audit_html",
+    "render_evidence_html",
     "render_lineage_html",
     "render_pack_html",
     "replay_plan",

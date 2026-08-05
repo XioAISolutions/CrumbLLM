@@ -1,4 +1,4 @@
-# CRUMB EJA v0.3
+# CRUMB EJA v0.4
 
 CRUMB EJA stores a complete discovery handoff rather than a prose-only context
 summary. An artifact keeps raw observations, the recorded surprise, competing
@@ -42,23 +42,39 @@ crumblm eja audit-pack artifacts \
   --html artifacts/eja-audit.html
 ```
 
-The v0.3 audit checks:
-
-- structural and canonical-hash validity;
-- candidate axioms created before evidence completion;
-- completed discoveries missing their candidate axiom;
-- candidate-status and verifier-verdict mismatches;
-- conflicting verdicts across replicated world/axiom groups;
-- leading-hypothesis instability across replications;
-- duplicate artifacts, missing declared parents, self-parent links, and lineage
-  cycles.
-
+The scientific audit checks structural validity, evidence completion, candidate
+status versus verifier verdict, replication consistency, and lineage integrity.
 Warnings do not automatically fail an audit. Structural contradictions and
 scientific-state inconsistencies do.
 
+## Evidence-reference and blind-protocol audit
+
+v0.4 adds a graph from recorded intervention evidence to hypotheses, deductions,
+candidate axioms, and verifier results.
+
+```bash
+crumblm eja evidence-pack artifacts \
+  --out artifacts/eja-evidence.json \
+  --html artifacts/eja-evidence.html
+```
+
+For blinded pre-registered model-selection artifacts, the audit also checks:
+
+- unique `evidence_ref` values;
+- hypothesis and deduction references that resolve to recorded trajectories;
+- target-language leakage recorded by the benchmark;
+- whether semantic model statements were hidden during selection;
+- whether the artifact honestly labels the task as model selection rather than
+  open-ended abduction;
+- model-deck mapping and agent-prompt hashes;
+- declared hypothesis origin.
+
+Older non-blind artifacts remain compatible. Their prose evidence can produce
+warnings, but it is not silently reinterpreted as a precise evidence reference.
+
 ## Lineage graph
 
-Artifacts may declare:
+Artifacts may declare hash-addressed parents:
 
 ```json
 {
@@ -76,9 +92,8 @@ crumblm eja lineage-pack artifacts \
   --html artifacts/eja-lineage.html
 ```
 
-The graph records hash-addressed parent-child edges, duplicate hashes, missing
-parents, and cycles. A declared edge means that one run consumed an artifact or
-bounded memory derived from another; it does not prove scientific implication.
+A declared edge means that one run consumed an artifact or bounded memory
+derived from another; it does not prove scientific implication.
 
 ## Reproducibility manifest
 
@@ -89,8 +104,31 @@ crumblm eja manifest-pack artifacts --out artifacts/eja-manifest.json
 The manifest records each path, canonical hash, experiment, world, seed, winner,
 candidate-axiom ID, verdict, and parent hashes, then hashes the manifest itself.
 
+## Deterministic review bundle
+
+```bash
+crumblm eja bundle-pack artifacts \
+  --out artifacts/eja-review-bundle.zip \
+  --report artifacts/eja-review-bundle-result.json
+```
+
+The ZIP contains:
+
+- every source EJA artifact under its relative path;
+- structural validation;
+- scientific audit;
+- evidence audit;
+- lineage graph;
+- reproducibility manifest;
+- a content-hashed `INDEX.json`.
+
+Archive paths, ordering, timestamps, and report serialization are deterministic,
+so an unchanged source pack produces the same bundle hash.
+
 ## Claim boundary
 
-A valid artifact, pack, audit, lineage graph, or manifest establishes internal
-format, provenance, and consistency properties only. It does not prove a
-candidate axiom outside the verifier scope recorded by the experiment.
+A valid artifact, pack, audit, evidence graph, lineage graph, manifest, or bundle
+establishes internal format, provenance, and consistency properties only. It
+does not prove a candidate axiom outside the verifier scope recorded by the
+experiment, and it does not turn pre-registered model selection into open-ended
+scientific discovery.

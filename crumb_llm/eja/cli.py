@@ -14,6 +14,11 @@ from .audit import (
     render_lineage_html,
     write_html_report,
 )
+from .evidence import (
+    audit_evidence_pack,
+    build_review_bundle,
+    render_evidence_html,
+)
 from .model import (
     artifact_hash,
     compare_artifacts,
@@ -45,6 +50,8 @@ def cmd_eja(args: argparse.Namespace) -> int:
         "audit-pack",
         "lineage-pack",
         "manifest-pack",
+        "evidence-pack",
+        "bundle-pack",
     }:
         verify_hash = not getattr(args, "skip_hash", False)
         if command == "audit-pack":
@@ -63,6 +70,20 @@ def cmd_eja(args: argparse.Namespace) -> int:
             manifest = build_manifest(args.directory, verify_hash=verify_hash)
             _write(json.dumps(manifest, indent=2, sort_keys=True), args.out)
             return 0
+        if command == "evidence-pack":
+            report = audit_evidence_pack(args.directory)
+            _write(json.dumps(report, indent=2, sort_keys=True), args.out)
+            if args.html:
+                write_html_report(render_evidence_html(report), args.html)
+            return 0 if report["evidence_valid"] else 1
+        if command == "bundle-pack":
+            result = build_review_bundle(args.directory, args.out)
+            _write(json.dumps(result, indent=2, sort_keys=True), args.report)
+            return 0 if (
+                result["validation_valid"]
+                and result["scientific_audit_valid"]
+                and result["evidence_audit_valid"]
+            ) else 1
 
         report = validate_pack(args.directory, verify_hash=verify_hash)
         if command == "validate-pack":
@@ -178,6 +199,24 @@ def _add_commands(commands: argparse._SubParsersAction) -> None:
     manifest_pack_parser.add_argument("--skip-hash", action="store_true")
     manifest_pack_parser.add_argument("--out")
     manifest_pack_parser.set_defaults(func=cmd_eja, eja_command="manifest-pack")
+
+    evidence_pack_parser = commands.add_parser(
+        "evidence-pack",
+        help="Audit evidence references and blinded-model provenance",
+    )
+    evidence_pack_parser.add_argument("directory")
+    evidence_pack_parser.add_argument("--out")
+    evidence_pack_parser.add_argument("--html")
+    evidence_pack_parser.set_defaults(func=cmd_eja, eja_command="evidence-pack")
+
+    bundle_pack_parser = commands.add_parser(
+        "bundle-pack",
+        help="Create a deterministic ZIP with artifacts, audits, lineage, and manifests",
+    )
+    bundle_pack_parser.add_argument("directory")
+    bundle_pack_parser.add_argument("--out", required=True)
+    bundle_pack_parser.add_argument("--report")
+    bundle_pack_parser.set_defaults(func=cmd_eja, eja_command="bundle-pack")
 
 
 def register_eja_subparser(subparsers: argparse._SubParsersAction) -> None:

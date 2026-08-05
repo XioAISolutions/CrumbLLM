@@ -22,6 +22,32 @@
       "type": "object",
       "required": ["id", "world", "deterministic_seed"]
     },
+    "blind_protocol": {
+      "type": "object",
+      "properties": {
+        "protocol": {"type": "string"},
+        "open_ended_abduction": {"const": false},
+        "model_statements_visible_to_agent": {"const": false},
+        "target_terms_withheld": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "leakage_hits": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {"type": "string"}
+        },
+        "mapping_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "agent_prompt_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "reveal_policy": {"type": "string"}
+      }
+    },
     "experience": {
       "type": "object",
       "required": ["initial_observations"]
@@ -35,19 +61,47 @@
       "minItems": 2,
       "items": {
         "type": "object",
-        "required": ["id", "class", "statement", "assumptions", "falsifiers"]
+        "required": ["id", "class", "statement", "assumptions", "falsifiers"],
+        "properties": {
+          "evidence_for": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "evidence_against": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "statement_visible_to_agent": {"type": "boolean"},
+          "semantic_key": {"type": "string"}
+        }
       }
     },
     "trajectories": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["intervention", "observations"]
+        "required": ["intervention", "observations"],
+        "properties": {
+          "evidence_ref": {"type": "string", "minLength": 1},
+          "observed_signature": {"type": "string"}
+        }
       }
     },
     "candidate_axiom": {
       "type": ["object", "null"],
       "required": ["id", "statement", "assumptions", "falsifiers", "excluded_claims"]
+    },
+    "deductions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "evidence_refs": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
     },
     "verification": {
       "type": "object",
@@ -59,9 +113,13 @@
         "discovery_complete": {"type": "boolean"},
         "experiments_run": {"type": "integer", "minimum": 0},
         "local_invariance_tests": {"type": "integer", "minimum": 0},
+        "discriminating_tests": {"type": "integer", "minimum": 0},
         "scope_boundary_observed": {"type": "boolean"},
+        "latent_difference_observed": {"type": "boolean"},
         "winner": {"type": "string"},
-        "winner_score": {"type": "number", "minimum": 0, "maximum": 1}
+        "winner_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "blind_selection_correct": {"type": "boolean"},
+        "evaluator_selected_semantic_key": {"type": "string"}
       }
     },
     "salience_memory": {
@@ -80,6 +138,7 @@
           "pattern": "^sha256:[0-9a-f]{64}$"
         },
         "hidden_state_exposed_to_agent": {"const": false},
+        "hypothesis_origin": {"type": "string"},
         "parent_artifact_hashes": {
           "type": "array",
           "uniqueItems": true,
