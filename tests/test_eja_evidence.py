@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import copy
+import json
 from pathlib import Path
-import shutil
 
 from crumb_llm.eja import (
     artifact_hash,
@@ -32,8 +31,17 @@ def _blind_artifact() -> dict:
         hypothesis["evidence_against"] = []
         hypothesis["statement_visible_to_agent"] = False
         hypothesis["semantic_key"] = f"model-{index + 1}"
-    for deduction in artifact.get("deductions") or []:
+
+    artifact["deductions"] = artifact.get("deductions") or [
+        {
+            "id": "D-test",
+            "derived_from": artifact["candidate_axiom"]["id"],
+            "prediction": "Recorded intervention evidence tests the candidate axiom.",
+        }
+    ]
+    for deduction in artifact["deductions"]:
         deduction["evidence_refs"] = [refs[0]]
+
     artifact["blind_protocol"] = {
         "protocol": "pre_registered_anonymous_model_selection_v1",
         "open_ended_abduction": False,
@@ -56,7 +64,7 @@ def _pack(tmp_path: Path) -> Path:
     root.mkdir()
     artifact = _blind_artifact()
     path = root / "blind-run.eja.json"
-    path.write_text(__import__("json").dumps(artifact, indent=2, sort_keys=True) + "\n")
+    path.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n")
     return root
 
 
