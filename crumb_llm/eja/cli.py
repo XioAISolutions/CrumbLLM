@@ -6,6 +6,14 @@ import argparse
 import json
 from pathlib import Path
 
+from .audit import (
+    audit_pack,
+    build_lineage,
+    build_manifest,
+    render_audit_html,
+    render_lineage_html,
+    write_html_report,
+)
 from .model import (
     artifact_hash,
     compare_artifacts,
@@ -30,8 +38,33 @@ def _write(value: str, out: str | None) -> None:
 
 def cmd_eja(args: argparse.Namespace) -> int:
     command = args.eja_command
-    if command in {"validate-pack", "summarize-pack", "report-pack"}:
-        report = validate_pack(args.directory, verify_hash=not getattr(args, "skip_hash", False))
+    if command in {
+        "validate-pack",
+        "summarize-pack",
+        "report-pack",
+        "audit-pack",
+        "lineage-pack",
+        "manifest-pack",
+    }:
+        verify_hash = not getattr(args, "skip_hash", False)
+        if command == "audit-pack":
+            report = audit_pack(args.directory, verify_hash=verify_hash)
+            _write(json.dumps(report, indent=2, sort_keys=True), args.out)
+            if args.html:
+                write_html_report(render_audit_html(report), args.html)
+            return 0 if report["audit_valid"] else 1
+        if command == "lineage-pack":
+            graph = build_lineage(args.directory)
+            _write(json.dumps(graph, indent=2, sort_keys=True), args.out)
+            if args.html:
+                write_html_report(render_lineage_html(graph), args.html)
+            return 0 if graph["acyclic"] else 1
+        if command == "manifest-pack":
+            manifest = build_manifest(args.directory, verify_hash=verify_hash)
+            _write(json.dumps(manifest, indent=2, sort_keys=True), args.out)
+            return 0
+
+        report = validate_pack(args.directory, verify_hash=verify_hash)
         if command == "validate-pack":
             _write(json.dumps(report, indent=2, sort_keys=True), args.out)
             if args.html:
@@ -119,6 +152,32 @@ def _add_commands(commands: argparse._SubParsersAction) -> None:
     report_pack_parser.add_argument("--skip-hash", action="store_true")
     report_pack_parser.add_argument("--out", required=True)
     report_pack_parser.set_defaults(func=cmd_eja, eja_command="report-pack")
+
+    audit_pack_parser = commands.add_parser(
+        "audit-pack",
+        help="Audit evidence gates, verdict consistency, replication, and lineage",
+    )
+    audit_pack_parser.add_argument("directory")
+    audit_pack_parser.add_argument("--skip-hash", action="store_true")
+    audit_pack_parser.add_argument("--out")
+    audit_pack_parser.add_argument("--html")
+    audit_pack_parser.set_defaults(func=cmd_eja, eja_command="audit-pack")
+
+    lineage_pack_parser = commands.add_parser(
+        "lineage-pack", help="Build a parent-child graph for an EJA directory"
+    )
+    lineage_pack_parser.add_argument("directory")
+    lineage_pack_parser.add_argument("--out")
+    lineage_pack_parser.add_argument("--html")
+    lineage_pack_parser.set_defaults(func=cmd_eja, eja_command="lineage-pack")
+
+    manifest_pack_parser = commands.add_parser(
+        "manifest-pack", help="Create a stable reproducibility manifest for an EJA pack"
+    )
+    manifest_pack_parser.add_argument("directory")
+    manifest_pack_parser.add_argument("--skip-hash", action="store_true")
+    manifest_pack_parser.add_argument("--out")
+    manifest_pack_parser.set_defaults(func=cmd_eja, eja_command="manifest-pack")
 
 
 def register_eja_subparser(subparsers: argparse._SubParsersAction) -> None:
