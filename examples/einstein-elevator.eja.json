@@ -1,0 +1,119 @@
+{
+  "artifact_type": "eja_experiment",
+  "candidate_axiom": {
+    "assumptions": ["local enclosed cabin", "uniform fields"],
+    "excluded_claims": ["global equivalence", "general relativity"],
+    "falsifiers": ["a local observable differs beyond tolerance"],
+    "id": "A1",
+    "statement": "Within the tested local enclosed regime, matched uniform gravity and frame acceleration produce equivalent local mechanical observations.",
+    "status": "supported_within_scope"
+  },
+  "crumb_version": "1.5",
+  "experience": {
+    "initial_observational_match": true,
+    "initial_observations": [
+      {
+        "invariant_results": {"finite_state": true},
+        "metadata": {},
+        "observation_id": "A0",
+        "sensor_readings": {
+          "apparent_weight_n": 686.7,
+          "floor_reaction_force_n": 686.7,
+          "relative_drop_acceleration_m_s2": 9.81
+        },
+        "state_id": "sha256:a",
+        "step": 0,
+        "values": {"scenario_id": "A"}
+      },
+      {
+        "invariant_results": {"finite_state": true},
+        "metadata": {},
+        "observation_id": "B0",
+        "sensor_readings": {
+          "apparent_weight_n": 686.7,
+          "floor_reaction_force_n": 686.7,
+          "relative_drop_acceleration_m_s2": 9.81
+        },
+        "state_id": "sha256:b",
+        "step": 0,
+        "values": {"scenario_id": "B"}
+      }
+    ]
+  },
+  "experiment": {
+    "deterministic_seed": 17,
+    "id": "elevator-example-1",
+    "world": "einstein-elevator-v0.1"
+  },
+  "hypotheses": [
+    {
+      "assumptions": ["faults vary on repeat"],
+      "class": "measurement_error",
+      "evidence_against": ["stable repeats"],
+      "evidence_for": [],
+      "falsifiers": ["stable repeats"],
+      "id": "H1",
+      "score": 0.1,
+      "statement": "The sensors are faulty.",
+      "status": "rejected"
+    },
+    {
+      "assumptions": ["local enclosed cabin"],
+      "class": "reference_frame_equivalence",
+      "evidence_against": [],
+      "evidence_for": ["mass test"],
+      "falsifiers": ["different local reading"],
+      "id": "H4",
+      "score": 0.9,
+      "statement": "Matched uniform gravity and frame acceleration are locally equivalent for tested mechanics.",
+      "status": "active"
+    }
+  ],
+  "provenance": {
+    "artifact_hash": "sha256:9a66d7e0b4d982af8f0298e0f22c20fe42b4f38ee70ddff1fdc55e9d078dc14e",
+    "generator": "gaugegap.jump_lab.AbductiveExecutive",
+    "hidden_state_exposed_to_agent": false
+  },
+  "surprise": {
+    "description": "Different hidden causes produced matching local readings.",
+    "type": "observational_equivalence"
+  },
+  "trajectories": [
+    {
+      "discriminated_hypotheses": ["H1", "H4"],
+      "external_difference": true,
+      "intervention": {
+        "action_type": "open_external_reference",
+        "parameters": {},
+        "rationale": "test scope"
+      },
+      "local_match": true,
+      "observations": [
+        {
+          "invariant_results": {"finite_state": true},
+          "metadata": {},
+          "observation_id": "A1",
+          "sensor_readings": {"external_cabin_acceleration_up_m_s2": 0.0},
+          "state_id": "sha256:c",
+          "step": 1,
+          "values": {}
+        },
+        {
+          "invariant_results": {"finite_state": true},
+          "metadata": {},
+          "observation_id": "B1",
+          "sensor_readings": {"external_cabin_acceleration_up_m_s2": 9.81},
+          "state_id": "sha256:d",
+          "step": 1,
+          "values": {}
+        }
+      ],
+      "salience_score": 0.99
+    }
+  ],
+  "verification": {
+    "local_cases": 8,
+    "local_failures": 0,
+    "verdict": "supported_within_scope"
+  }
+}
