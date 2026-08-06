@@ -130,6 +130,42 @@
         "positive_abstention": {"type": "boolean"}
       }
     },
+    "calibration_protocol": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "split",
+        "threshold_frozen_before_test",
+        "threshold_commitment_hash",
+        "frozen_threshold",
+        "calibration_record_hashes",
+        "test_answers_used_for_calibration"
+      ],
+      "properties": {
+        "protocol": {"const": "disjoint_frozen_threshold_calibration_v1"},
+        "split": {"enum": ["calibration", "test"]},
+        "threshold_frozen_before_test": {"type": "boolean"},
+        "threshold_commitment_hash": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "frozen_threshold": {
+          "type": ["object", "null"],
+          "properties": {
+            "minimum_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "minimum_margin": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "calibration_record_hashes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        },
+        "test_answers_used_for_calibration": {"const": false}
+      }
+    },
     "experience": {
       "type": "object",
       "required": ["initial_observations"]
