@@ -14,6 +14,7 @@ from .audit import (
     render_lineage_html,
     write_html_report,
 )
+from .challenge import audit_challenge_pack, render_challenge_html
 from .evidence import (
     audit_evidence_pack,
     build_review_bundle,
@@ -51,6 +52,7 @@ def cmd_eja(args: argparse.Namespace) -> int:
         "lineage-pack",
         "manifest-pack",
         "evidence-pack",
+        "challenge-pack",
         "bundle-pack",
     }:
         verify_hash = not getattr(args, "skip_hash", False)
@@ -76,14 +78,23 @@ def cmd_eja(args: argparse.Namespace) -> int:
             if args.html:
                 write_html_report(render_evidence_html(report), args.html)
             return 0 if report["evidence_valid"] else 1
+        if command == "challenge-pack":
+            report = audit_challenge_pack(args.directory)
+            _write(json.dumps(report, indent=2, sort_keys=True), args.out)
+            if args.html:
+                write_html_report(render_challenge_html(report), args.html)
+            return 0 if report["challenge_valid"] else 1
         if command == "bundle-pack":
             result = build_review_bundle(args.directory, args.out)
             _write(json.dumps(result, indent=2, sort_keys=True), args.report)
-            return 0 if (
+            required = (
                 result["validation_valid"]
                 and result["scientific_audit_valid"]
                 and result["evidence_audit_valid"]
-            ) else 1
+            )
+            if result.get("challenge_artifact_count", 0):
+                required = required and result.get("challenge_audit_valid", False)
+            return 0 if required else 1
 
         report = validate_pack(args.directory, verify_hash=verify_hash)
         if command == "validate-pack":
@@ -208,6 +219,15 @@ def _add_commands(commands: argparse._SubParsersAction) -> None:
     evidence_pack_parser.add_argument("--out")
     evidence_pack_parser.add_argument("--html")
     evidence_pack_parser.set_defaults(func=cmd_eja, eja_command="evidence-pack")
+
+    challenge_pack_parser = commands.add_parser(
+        "challenge-pack",
+        help="Audit sealed commitments, abstentions, and false discoveries",
+    )
+    challenge_pack_parser.add_argument("directory")
+    challenge_pack_parser.add_argument("--out")
+    challenge_pack_parser.add_argument("--html")
+    challenge_pack_parser.set_defaults(func=cmd_eja, eja_command="challenge-pack")
 
     bundle_pack_parser = commands.add_parser(
         "bundle-pack",

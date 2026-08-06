@@ -8,6 +8,11 @@ from .audit import (
     render_lineage_html,
     write_html_report,
 )
+from .challenge import (
+    audit_challenge_artifact,
+    audit_challenge_pack,
+    render_challenge_html,
+)
 from .evidence import (
     audit_evidence_artifact,
     audit_evidence_pack,
@@ -38,6 +43,8 @@ __all__ = [
     "ValidationIssue",
     "ValidationReport",
     "artifact_hash",
+    "audit_challenge_artifact",
+    "audit_challenge_pack",
     "audit_evidence_artifact",
     "audit_evidence_pack",
     "audit_pack",
@@ -50,6 +57,7 @@ __all__ = [
     "dump_artifact",
     "load_artifact",
     "render_audit_html",
+    "render_challenge_html",
     "render_evidence_html",
     "render_lineage_html",
     "render_pack_html",
