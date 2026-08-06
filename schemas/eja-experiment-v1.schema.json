@@ -48,6 +48,88 @@
         "reveal_policy": {"type": "string"}
       }
     },
+    "challenge_protocol": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "case_commitment_hash",
+        "answer_commitment_hash",
+        "submission_hash",
+        "answer_visible_to_agent",
+        "case_spec_visible_to_agent",
+        "selection_rule",
+        "reveal_policy"
+      ],
+      "properties": {
+        "protocol": {"const": "sealed_none_of_the_above_challenge_v1"},
+        "case_commitment_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "answer_commitment_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "submission_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "answer_visible_to_agent": {"const": false},
+        "case_spec_visible_to_agent": {"const": false},
+        "selection_rule": {
+          "type": "object",
+          "required": [
+            "minimum_score",
+            "minimum_margin",
+            "evidence_gates_required",
+            "abstention_allowed"
+          ],
+          "properties": {
+            "minimum_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "minimum_margin": {"type": "number", "minimum": 0, "maximum": 1},
+            "evidence_gates_required": {"const": true},
+            "abstention_allowed": {"const": true}
+          }
+        },
+        "reveal_policy": {"type": "string"}
+      }
+    },
+    "challenge_evaluation": {
+      "type": "object",
+      "required": [
+        "hidden_case_spec",
+        "answer_payload",
+        "submission_payload",
+        "selected_outcome",
+        "abstained",
+        "correct",
+        "false_discovery",
+        "positive_abstention"
+      ],
+      "properties": {
+        "hidden_case_spec": {"type": "object"},
+        "answer_payload": {
+          "type": "object",
+          "required": ["expected_outcome", "answerable_by_registered_deck"]
+        },
+        "submission_payload": {
+          "type": "object",
+          "required": [
+            "challenge_id",
+            "selected_outcome",
+            "abstained",
+            "top_score",
+            "selection_margin",
+            "evidence_refs"
+          ]
+        },
+        "selected_outcome": {"type": "string"},
+        "abstained": {"type": "boolean"},
+        "correct": {"type": "boolean"},
+        "false_discovery": {"type": "boolean"},
+        "positive_abstention": {"type": "boolean"}
+      }
+    },
     "experience": {
       "type": "object",
       "required": ["initial_observations"]
@@ -119,7 +201,13 @@
         "winner": {"type": "string"},
         "winner_score": {"type": "number", "minimum": 0, "maximum": 1},
         "blind_selection_correct": {"type": "boolean"},
-        "evaluator_selected_semantic_key": {"type": "string"}
+        "evaluator_selected_semantic_key": {"type": "string"},
+        "challenge_case_kind": {"type": "string"},
+        "challenge_correct": {"type": "boolean"},
+        "abstained": {"type": "boolean"},
+        "selection_margin": {"type": "number"},
+        "selected_outcome": {"type": "string"},
+        "false_discovery": {"type": "boolean"}
       }
     },
     "salience_memory": {
@@ -139,6 +227,14 @@
         },
         "hidden_state_exposed_to_agent": {"const": false},
         "hypothesis_origin": {"type": "string"},
+        "challenge_case_commitment": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "challenge_answer_commitment": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
         "parent_artifact_hashes": {
           "type": "array",
           "uniqueItems": true,
