@@ -14,6 +14,7 @@ from .audit import (
     render_lineage_html,
     write_html_report,
 )
+from .calibration import audit_calibration_report, render_calibration_html
 from .challenge import audit_challenge_pack, render_challenge_html
 from .evidence import (
     audit_evidence_pack,
@@ -53,6 +54,7 @@ def cmd_eja(args: argparse.Namespace) -> int:
         "manifest-pack",
         "evidence-pack",
         "challenge-pack",
+        "calibration-pack",
         "bundle-pack",
     }:
         verify_hash = not getattr(args, "skip_hash", False)
@@ -84,6 +86,12 @@ def cmd_eja(args: argparse.Namespace) -> int:
             if args.html:
                 write_html_report(render_challenge_html(report), args.html)
             return 0 if report["challenge_valid"] else 1
+        if command == "calibration-pack":
+            report = audit_calibration_report(args.directory)
+            _write(json.dumps(report, indent=2, sort_keys=True), args.out)
+            if args.html:
+                write_html_report(render_calibration_html(report), args.html)
+            return 0 if report["calibration_valid"] else 1
         if command == "bundle-pack":
             result = build_review_bundle(args.directory, args.out)
             _write(json.dumps(result, indent=2, sort_keys=True), args.report)
@@ -94,6 +102,8 @@ def cmd_eja(args: argparse.Namespace) -> int:
             )
             if result.get("challenge_artifact_count", 0):
                 required = required and result.get("challenge_audit_valid", False)
+            if result.get("calibration_report_count", 0):
+                required = required and result.get("calibration_audit_valid", False)
             return 0 if required else 1
 
         report = validate_pack(args.directory, verify_hash=verify_hash)
@@ -228,6 +238,15 @@ def _add_commands(commands: argparse._SubParsersAction) -> None:
     challenge_pack_parser.add_argument("--out")
     challenge_pack_parser.add_argument("--html")
     challenge_pack_parser.set_defaults(func=cmd_eja, eja_command="challenge-pack")
+
+    calibration_pack_parser = commands.add_parser(
+        "calibration-pack",
+        help="Audit disjoint splits, frozen thresholds, and unseen-test decisions",
+    )
+    calibration_pack_parser.add_argument("directory")
+    calibration_pack_parser.add_argument("--out")
+    calibration_pack_parser.add_argument("--html")
+    calibration_pack_parser.set_defaults(func=cmd_eja, eja_command="calibration-pack")
 
     bundle_pack_parser = commands.add_parser(
         "bundle-pack",
