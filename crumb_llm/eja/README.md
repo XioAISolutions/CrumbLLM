@@ -1,4 +1,4 @@
-# CRUMB EJA v0.5
+# CRUMB EJA v0.6
 
 CRUMB EJA stores a complete discovery handoff rather than a prose-only context
 summary. An artifact keeps raw observations, the recorded surprise, competing
@@ -41,16 +41,12 @@ crumblm eja evidence-pack artifacts \
   --html artifacts/eja-evidence.html
 ```
 
-The v0.4 evidence graph connects recorded intervention evidence to hypotheses,
+The evidence graph connects recorded intervention evidence to hypotheses,
 deductions, candidate axioms, and verifier results. For blinded model-selection
 artifacts, it also checks target-language leakage, statement exposure, mapping
 and prompt hashes, and declared hypothesis origin.
 
 ## Sealed challenge and abstention audit
-
-v0.5 adds a review gate for challenge artifacts in which the evaluator commits
-to a hidden case and answer before execution. The expected answer may be a
-registered model or `abstain` when the deck contains no adequate explanation.
 
 ```bash
 crumblm eja challenge-pack artifacts/jump-lab-challenge \
@@ -58,15 +54,9 @@ crumblm eja challenge-pack artifacts/jump-lab-challenge \
   --html artifacts/eja-challenge-audit.html
 ```
 
-The challenge audit independently recomputes:
-
-- hidden case commitment;
-- hidden answer commitment;
-- submitted selection commitment;
-- selection and abstention consistency;
-- evidence references carried by the submission;
-- candidate-axiom behavior after abstention;
-- stored correctness, false-discovery, and positive-abstention flags.
+The v0.5 challenge gate independently recomputes hidden case, hidden answer, and
+submitted-selection commitments. It checks abstention consistency, referenced
+evidence, candidate-axiom behavior after abstention, and false-discovery flags.
 
 A valid no-fit case must record:
 
@@ -84,19 +74,65 @@ A valid no-fit case must record:
 }
 ```
 
-The pack scorecard reports:
+## Frozen calibration audit
 
-- overall accuracy;
-- answerable-case accuracy;
-- none-of-the-above abstention accuracy;
+v0.6 audits selection thresholds chosen on a disjoint calibration split and
+frozen before unseen test seeds execute.
+
+```bash
+crumblm eja calibration-pack \
+  artifacts/jump-lab-calibration/calibration-suite.json \
+  --out artifacts/jump-lab-calibration/calibration-audit.json \
+  --html artifacts/jump-lab-calibration/calibration-audit.html
+```
+
+The audit independently verifies:
+
+- non-empty, disjoint calibration and test seed sets;
+- `answers_used_for_calibration: false`;
+- canonical hashes for every revealed calibration record;
+- the threshold commitment over calibration seeds, case kinds, candidate grid,
+  false-discovery constraint, record hashes, chosen threshold, and objective;
+- deterministic reproduction of the chosen score and margin threshold;
+- one identical frozen threshold across all test artifacts;
+- challenge selection rules matching that frozen threshold;
+- test decisions reproduced from each artifact's top score, margin, and evidence
+  completion state;
+- structural and sealed-challenge validity for every test artifact;
+- test artifact hashes excluded from the calibration-only record commitment.
+
+The resulting scorecard reports per-policy:
+
+- overall and answerable accuracy;
+- abstention accuracy;
 - false-discovery rate;
-- positive-abstention rate;
 - coverage and selective accuracy;
-- commitment-valid rate.
+- frozen-decision reproduction rate.
 
-This separates two questions that should not be conflated: whether the system
-can select a useful registered explanation and whether it knows when the deck is
-not adequate.
+This checks threshold discipline, not probability calibration. Anonymous-model
+scores are not assumed to be calibrated probabilities.
+
+A test artifact records:
+
+```json
+{
+  "calibration_protocol": {
+    "protocol": "disjoint_frozen_threshold_calibration_v1",
+    "split": "test",
+    "threshold_frozen_before_test": true,
+    "threshold_commitment_hash": "sha256:...",
+    "frozen_threshold": {
+      "minimum_score": 0.75,
+      "minimum_margin": 0.05
+    },
+    "calibration_record_hashes": ["sha256:..."],
+    "test_answers_used_for_calibration": false
+  }
+}
+```
+
+The numeric values above illustrate the structure only; the suite must reproduce
+whatever threshold its declared calibration records actually select.
 
 ## Lineage graph
 
@@ -129,12 +165,14 @@ crumblm eja bundle-pack artifacts \
 
 The deterministic ZIP contains source artifacts, structural validation,
 scientific audit, evidence audit, lineage, manifest, and a content-hashed index.
-Run `challenge-pack` alongside the bundle for sealed challenge scorecards.
+Run `challenge-pack` and `calibration-pack` alongside the bundle for their
+specialized scorecards.
 
 ## Claim boundary
 
-A valid artifact, pack, audit, challenge scorecard, evidence graph, lineage
-graph, manifest, or bundle establishes internal format, provenance, commitment,
-and consistency properties only. It does not prove a candidate axiom outside the
-verifier scope recorded by the experiment, and it does not turn pre-registered
-model selection into open-ended scientific discovery.
+A valid artifact, pack, audit, challenge scorecard, calibration audit, evidence
+graph, lineage graph, manifest, or bundle establishes internal format,
+provenance, commitment, split, threshold, and consistency properties only. It
+does not prove a candidate axiom outside the verifier scope recorded by the
+experiment, establish real-world probabilistic calibration, or turn
+pre-registered model selection into open-ended scientific discovery.
