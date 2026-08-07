@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xioai.co/schemas/eja-synthesis-v1.schema.json",
+  "title": "CRUMB EJA Finite-Grammar Synthesis Extension v1",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "synthesis_protocol",
+    "synthesis_candidates",
+    "synthesis_evaluation",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"const": "eja_experiment"},
+    "synthesis_protocol": {
+      "type": "object",
+      "required": [
+        "protocol",
+        "split",
+        "grammar",
+        "grammar_commitment_hash",
+        "case_commitment_hash",
+        "target_commitment_hash",
+        "target_visible_to_agent",
+        "target_expression_pre_registered",
+        "candidate_generation",
+        "generated_candidate_count",
+        "frozen_threshold",
+        "test_answers_used_for_calibration"
+      ],
+      "properties": {
+        "protocol": {"const": "finite_symbolic_grammar_v1"},
+        "split": {"enum": ["calibration", "test"]},
+        "grammar": {
+          "type": "object",
+          "required": [
+            "variables",
+            "response",
+            "form",
+            "exponent_tokens",
+            "operators",
+            "constant_fit",
+            "candidate_generation",
+            "maximum_candidates"
+          ]
+        },
+        "grammar_commitment_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "case_commitment_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "target_commitment_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "target_visible_to_agent": {"const": false},
+        "target_expression_pre_registered": {"const": false},
+        "candidate_generation": {"const": "cartesian_enumeration_from_primitives"},
+        "generated_candidate_count": {"type": "integer", "minimum": 1},
+        "frozen_threshold": {
+          "type": "object",
+          "required": ["minimum_score", "minimum_margin"],
+          "properties": {
+            "minimum_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "minimum_margin": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "threshold_commitment_hash": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "calibration_record_hashes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        },
+        "test_answers_used_for_calibration": {"const": false}
+      }
+    },
+    "synthesis_candidates": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "expression",
+          "exponents",
+          "fitted_constant",
+          "fit_score",
+          "relative_rmse",
+          "max_relative_error",
+          "complexity"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "exponents": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {"type": "number"}
+          },
+          "fit_score": {"type": "number", "minimum": 0, "maximum": 1},
+          "complexity": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "synthesis_evaluation": {
+      "type": "object",
+      "required": [
+        "hidden_case_spec",
+        "target_payload",
+        "selected_candidate_id",
+        "selected_exponents",
+        "selected_outcome",
+        "accepted",
+        "correct",
+        "exact_exponent_recovery",
+        "false_discovery",
+        "positive_abstention"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "hypothesis_origin": {"const": "finite_symbolic_grammar_enumeration"},
+        "hidden_state_exposed_to_agent": {"const": false}
+      }
+    }
+  }
+}
