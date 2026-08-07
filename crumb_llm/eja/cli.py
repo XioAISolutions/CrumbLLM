@@ -30,6 +30,7 @@ from .model import (
     validate_artifact,
 )
 from .pack import summarize_pack, validate_pack, write_pack_report
+from .synthesis import audit_synthesis_pack, render_synthesis_html
 
 
 def _write(value: str, out: str | None) -> None:
@@ -55,6 +56,7 @@ def cmd_eja(args: argparse.Namespace) -> int:
         "evidence-pack",
         "challenge-pack",
         "calibration-pack",
+        "synthesis-pack",
         "bundle-pack",
     }:
         verify_hash = not getattr(args, "skip_hash", False)
@@ -92,6 +94,12 @@ def cmd_eja(args: argparse.Namespace) -> int:
             if args.html:
                 write_html_report(render_calibration_html(report), args.html)
             return 0 if report["calibration_valid"] else 1
+        if command == "synthesis-pack":
+            report = audit_synthesis_pack(args.directory, suite=args.suite)
+            _write(json.dumps(report, indent=2, sort_keys=True), args.out)
+            if args.html:
+                write_html_report(render_synthesis_html(report), args.html)
+            return 0 if report["synthesis_valid"] else 1
         if command == "bundle-pack":
             result = build_review_bundle(args.directory, args.out)
             _write(json.dumps(result, indent=2, sort_keys=True), args.report)
@@ -104,6 +112,8 @@ def cmd_eja(args: argparse.Namespace) -> int:
                 required = required and result.get("challenge_audit_valid", False)
             if result.get("calibration_report_count", 0):
                 required = required and result.get("calibration_audit_valid", False)
+            if result.get("synthesis_artifact_count", 0):
+                required = required and result.get("synthesis_audit_valid", False)
             return 0 if required else 1
 
         report = validate_pack(args.directory, verify_hash=verify_hash)
@@ -247,6 +257,19 @@ def _add_commands(commands: argparse._SubParsersAction) -> None:
     calibration_pack_parser.add_argument("--out")
     calibration_pack_parser.add_argument("--html")
     calibration_pack_parser.set_defaults(func=cmd_eja, eja_command="calibration-pack")
+
+    synthesis_pack_parser = commands.add_parser(
+        "synthesis-pack",
+        help="Audit finite-grammar candidate generation, held-out recovery, and abstention",
+    )
+    synthesis_pack_parser.add_argument("directory")
+    synthesis_pack_parser.add_argument(
+        "--suite",
+        help="Optional v0.7 synthesis-suite JSON for split and threshold-commitment auditing",
+    )
+    synthesis_pack_parser.add_argument("--out")
+    synthesis_pack_parser.add_argument("--html")
+    synthesis_pack_parser.set_defaults(func=cmd_eja, eja_command="synthesis-pack")
 
     bundle_pack_parser = commands.add_parser(
         "bundle-pack",
