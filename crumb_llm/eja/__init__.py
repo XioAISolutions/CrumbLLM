@@ -48,6 +48,13 @@ from .pack import (
     validate_pack,
     write_pack_report,
 )
+from .synthesis import (
+    audit_synthesis_artifact,
+    audit_synthesis_pack,
+    audit_synthesis_suite,
+    render_synthesis_html,
+    synthesis_commitment_payload,
+)
 
 __all__ = [
     "ValidationIssue",
@@ -61,6 +68,9 @@ __all__ = [
     "audit_evidence_artifact",
     "audit_evidence_pack",
     "audit_pack",
+    "audit_synthesis_artifact",
+    "audit_synthesis_pack",
+    "audit_synthesis_suite",
     "build_evidence_graph",
     "build_lineage",
     "build_manifest",
@@ -78,10 +88,12 @@ __all__ = [
     "render_evidence_html",
     "render_lineage_html",
     "render_pack_html",
+    "render_synthesis_html",
     "replay_plan",
     "score_threshold",
     "summarize_artifact",
     "summarize_pack",
+    "synthesis_commitment_payload",
     "validate_artifact",
     "validate_pack",
     "write_html_report",
