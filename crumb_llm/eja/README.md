@@ -1,9 +1,9 @@
-# CRUMB EJA v0.6
+# CRUMB EJA v0.7
 
 CRUMB EJA stores a complete discovery handoff rather than a prose-only context
-summary. An artifact keeps raw observations, the recorded surprise, competing
-hypotheses, ordered interventions, trajectories, a scoped candidate axiom,
-deductions, verifier output, metrics, and provenance.
+summary. An artifact keeps raw observations, the recorded surprise, competing or
+generated hypotheses, ordered interventions, trajectories, a scoped candidate
+axiom, deductions, verifier output, metrics, and provenance.
 
 ## Single artifacts
 
@@ -58,26 +58,7 @@ The v0.5 challenge gate independently recomputes hidden case, hidden answer, and
 submitted-selection commitments. It checks abstention consistency, referenced
 evidence, candidate-axiom behavior after abstention, and false-discovery flags.
 
-A valid no-fit case must record:
-
-```json
-{
-  "challenge_evaluation": {
-    "selected_outcome": "abstain",
-    "abstained": true,
-    "false_discovery": false
-  },
-  "candidate_axiom": null,
-  "verification": {
-    "verdict": "not_evaluated_due_to_abstention"
-  }
-}
-```
-
 ## Frozen calibration audit
-
-v0.6 audits selection thresholds chosen on a disjoint calibration split and
-frozen before unseen test seeds execute.
 
 ```bash
 crumblm eja calibration-pack \
@@ -86,53 +67,64 @@ crumblm eja calibration-pack \
   --html artifacts/jump-lab-calibration/calibration-audit.html
 ```
 
-The audit independently verifies:
+v0.6 independently verifies disjoint calibration/test seeds, calibration-record
+hashes, the frozen threshold commitment, deterministic threshold reproduction,
+answer leakage, threshold drift, and unseen-test decision reproduction.
 
-- non-empty, disjoint calibration and test seed sets;
-- `answers_used_for_calibration: false`;
-- canonical hashes for every revealed calibration record;
-- the threshold commitment over calibration seeds, case kinds, candidate grid,
-  false-discovery constraint, record hashes, chosen threshold, and objective;
-- deterministic reproduction of the chosen score and margin threshold;
-- one identical frozen threshold across all test artifacts;
-- challenge selection rules matching that frozen threshold;
-- test decisions reproduced from each artifact's top score, margin, and evidence
-  completion state;
-- structural and sealed-challenge validity for every test artifact;
-- test artifact hashes excluded from the calibration-only record commitment.
+## Finite-grammar symbolic synthesis audit
 
-The resulting scorecard reports per-policy:
+v0.7 adds a separate review lane for artifacts that generate symbolic candidates
+from a committed grammar instead of selecting from a pre-registered list of
+complete models.
 
-- overall and answerable accuracy;
-- abstention accuracy;
-- false-discovery rate;
-- coverage and selective accuracy;
-- frozen-decision reproduction rate.
-
-This checks threshold discipline, not probability calibration. Anonymous-model
-scores are not assumed to be calibrated probabilities.
-
-A test artifact records:
-
-```json
-{
-  "calibration_protocol": {
-    "protocol": "disjoint_frozen_threshold_calibration_v1",
-    "split": "test",
-    "threshold_frozen_before_test": true,
-    "threshold_commitment_hash": "sha256:...",
-    "frozen_threshold": {
-      "minimum_score": 0.75,
-      "minimum_margin": 0.05
-    },
-    "calibration_record_hashes": ["sha256:..."],
-    "test_answers_used_for_calibration": false
-  }
-}
+```bash
+crumblm eja synthesis-pack artifacts/jump-lab-synthesis \
+  --suite artifacts/jump-lab-synthesis/synthesis-suite.json \
+  --out artifacts/jump-lab-synthesis/synthesis-audit.json \
+  --html artifacts/jump-lab-synthesis/synthesis-audit.html
 ```
 
-The numeric values above illustrate the structure only; the suite must reproduce
-whatever threshold its declared calibration records actually select.
+The artifact-level audit checks:
+
+- grammar SHA-256 commitment;
+- hidden case and target commitments;
+- `target_visible_to_agent: false`;
+- `target_expression_pre_registered: false`;
+- generated candidate count versus the committed grammar budget;
+- every exponent token against the grammar;
+- unique candidate IDs;
+- deterministic ranking by fit, complexity, and candidate ID;
+- selected candidate consistency;
+- frozen-threshold acceptance and abstention;
+- exact exponent recovery after the target reveal;
+- prevention of candidate-axiom compilation for no-fit cases;
+- candidate-axiom linkage to the generated expression;
+- required post-selection verifier verdicts;
+- declared hypothesis origin and hidden-state boundary.
+
+When `--suite` is supplied, CRUMB also recomputes:
+
+- calibration-record hashes;
+- the synthesis threshold commitment;
+- the deterministic threshold selected from the declared grid and objective;
+- calibration/test seed disjointness;
+- positive held-out exponent-pair disjointness;
+- the shared frozen threshold commitment referenced by test artifacts.
+
+The v0.7 scorecard reports test accuracy, held-out exact exponent recovery,
+no-fit abstention accuracy, false-discovery rate, positive-abstention rate, and
+grammar-commitment validity.
+
+The companion schema is:
+
+```text
+schemas/eja-synthesis-v1.schema.json
+```
+
+This lane is intentionally called **finite-grammar symbolic synthesis**. A
+passing audit proves that the recorded grammar search and commitments are
+internally reproducible. It does not mean that the system invented arbitrary new
+operators, variables, or scientific concepts.
 
 ## Lineage graph
 
@@ -165,14 +157,14 @@ crumblm eja bundle-pack artifacts \
 
 The deterministic ZIP contains source artifacts, structural validation,
 scientific audit, evidence audit, lineage, manifest, and a content-hashed index.
-Run `challenge-pack` and `calibration-pack` alongside the bundle for their
-specialized scorecards.
+Specialized challenge, calibration, and synthesis scorecards remain available as
+separate explicit audit commands.
 
 ## Claim boundary
 
-A valid artifact, pack, audit, challenge scorecard, calibration audit, evidence
-graph, lineage graph, manifest, or bundle establishes internal format,
-provenance, commitment, split, threshold, and consistency properties only. It
-does not prove a candidate axiom outside the verifier scope recorded by the
-experiment, establish real-world probabilistic calibration, or turn
-pre-registered model selection into open-ended scientific discovery.
+A valid artifact, pack, audit, challenge scorecard, calibration audit, synthesis
+audit, evidence graph, lineage graph, manifest, or bundle establishes internal
+format, provenance, commitment, split, threshold, grammar, and consistency
+properties only. It does not prove a candidate axiom outside the verifier scope
+recorded by the experiment, establish real-world probabilistic calibration, or
+turn a finite hand-authored grammar into open-ended scientific discovery.
