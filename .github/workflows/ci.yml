@@ -25,6 +25,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # crumb_core ships in crumb-format >= 1.2.0, which is merged to main but not
+      # yet on PyPI (the index still serves 0.2.0). Install it from source until
+      # that release is tagged; the pyproject constraint stays correct for end
+      # users, and this step tests the real integration rather than mocking it.
+      # Delete this step once crumb-format 1.2.0 is published.
+      - name: Install crumb-format from source (pre-release of 1.2.0)
+        run: python -m pip install "crumb-format @ git+https://github.com/XioAISolutions/crumb-format@main"
+
       - name: Install CrumbLLM
         run: python -m pip install -e .[dev]
 
@@ -68,7 +76,7 @@ jobs:
           crumblm analyze examples/basic.crumb
 
   build:
-    name: build & verify zero-dependency wheel
+    name: build & verify the wheel's dependency surface
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,15 +86,33 @@ jobs:
         with:
           python-version: "3.11"
 
+      # crumb_core ships in crumb-format >= 1.2.0, which is merged to main but not
+      # yet on PyPI (the index still serves 0.2.0). Install it from source until
+      # that release is tagged; the pyproject constraint stays correct for end
+      # users, and this step tests the real integration rather than mocking it.
+      # Delete this step once crumb-format 1.2.0 is published.
+      - name: Install crumb-format from source (pre-release of 1.2.0)
+        run: python -m pip install "crumb-format @ git+https://github.com/XioAISolutions/crumb-format@main"
+
       - name: Build sdist + wheel
         run: |
           python -m pip install --upgrade build
           python -m build
 
-      - name: Assert the wheel declares zero required dependencies
+      - name: Assert the wheel's required dependencies stay on the allowlist
         run: |
           python - <<'PY'
-          import glob, zipfile
+          import glob, re, zipfile
+
+          # This job used to require *zero* dependencies. That rule, together with
+          # the meta-path finder that made crumb_format unimportable, is what kept
+          # a 334-line fork of the CRUMB grammar in this repo -- a fork nothing
+          # tested against the canonical parser, and which drifted. The intent
+          # worth preserving is "no heavy dependency tree", not "no dependencies",
+          # so exactly one is allowed: the parser itself, which is stdlib-only and
+          # dependency-free. Anything else still fails.
+          ALLOWED = {"crumb-format"}
+
           whl = sorted(glob.glob("dist/*.whl"))[-1]
           z = zipfile.ZipFile(whl)
           meta_name = next(n for n in z.namelist() if n.endswith("METADATA"))
@@ -95,12 +121,23 @@ jobs:
               line for line in meta.splitlines()
               if line.startswith("Requires-Dist:") and "extra ==" not in line
           ]
-          assert not core, f"crumb-llm must have zero required deps, found: {core}"
-          print("OK: wheel declares zero required dependencies")
+          names = {
+              re.split(r"[\s\[<>=!;(]", line.split(":", 1)[1].strip(), 1)[0].strip().lower()
+              for line in core
+          }
+          unexpected = sorted(names - ALLOWED)
+          assert not unexpected, (
+              f"crumb-llm gained required deps outside the allowlist {sorted(ALLOWED)}: {unexpected}"
+          )
+          print(f"OK: required deps within allowlist -> {sorted(names) or 'none'}")
           PY
 
       - name: Install the wheel offline and smoke-test the CLI
         run: |
           python -m venv /tmp/wheel-env
-          /tmp/wheel-env/bin/pip install --no-index dist/*.whl
+          # crumb-format is a real dependency now, so a strictly offline install
+          # cannot resolve it. Install the dependency first, then the wheel with
+          # --no-deps, which still proves the wheel itself is self-contained.
+          /tmp/wheel-env/bin/pip install "crumb-format @ git+https://github.com/XioAISolutions/crumb-format@main"
+          /tmp/wheel-env/bin/pip install --no-deps dist/*.whl
           /tmp/wheel-env/bin/crumblm --version
