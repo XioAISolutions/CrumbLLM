@@ -2,8 +2,8 @@ import sys
 from pathlib import Path
 
 # Make the crumb-llm package importable when tests run from the repo without an
-# editable install. CRUMB parsing is bundled (crumb_llm/crumb/spec.py), so no
-# external package is needed for the suite to run.
+# editable install. CRUMB parsing delegates to crumb_core, the single normative
+# implementation of the grammar.
 _PKG_ROOT = Path(__file__).resolve().parent.parent
 if str(_PKG_ROOT) not in sys.path:
     sys.path.insert(0, str(_PKG_ROOT))

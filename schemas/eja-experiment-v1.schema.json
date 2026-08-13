@@ -4,7 +4,7 @@
   "title": "CRUMB EJA Experiment v1",
   "type": "object",
   "required": [
-    "crumb_version",
+    "eja_schema_version",
     "artifact_type",
     "experiment",
     "experience",
@@ -16,7 +16,7 @@
     "provenance"
   ],
   "properties": {
-    "crumb_version": {"const": "1.5"},
+    "eja_schema_version": {"const": "1.5"},
     "artifact_type": {"const": "eja_experiment"},
     "experiment": {
       "type": "object",

@@ -1,8 +1,8 @@
 """CRUMB reading layer.
 
-This subpackage is the *only* place CrumbLLM touches the CRUMB format. It ships
-a self-contained reader (:mod:`crumb_llm.crumb.spec`) and uses it exclusively,
-so CrumbLLM is fully independent of ``crumb-format``.
+This subpackage is the *only* place CrumbLLM touches the CRUMB format. Parsing
+delegates to ``crumb_core``, the single normative implementation of the
+grammar, rather than to a bundled fork of it.
 """
 
 from crumb_llm.crumb.loader import load_crumb, load_crumb_text

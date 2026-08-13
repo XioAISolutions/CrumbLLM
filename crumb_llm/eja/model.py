@@ -8,8 +8,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+# Named eja_schema_version, not crumb_version: an EJA artifact is JSON, not a
+# CRUMB document, and its schema generation is versioned independently of the
+# CRUMB wire format. The old name asserted a CRUMB v1.5 that no spec defines.
 REQUIRED_TOP_LEVEL = (
-    "crumb_version",
+    "eja_schema_version",
     "artifact_type",
     "experiment",
     "experience",

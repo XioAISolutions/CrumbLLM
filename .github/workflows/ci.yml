@@ -25,36 +25,38 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install CrumbLLM (independent — no crumb-format)
+      - name: Install CrumbLLM
         run: python -m pip install -e .[dev]
 
-      - name: Enforce independence — bundled reader, no crumb-format imports
+      - name: Enforce a single CRUMB grammar — no vendored fork
         run: |
           python - <<'PY'
           import sys
-          # crumb-format must not even be importable here, proving CrumbLLM
-          # never relies on it. Block it, then exercise the parse path.
-          import importlib.abc, importlib.machinery
 
-          class _Block(importlib.abc.MetaPathFinder):
-              def find_spec(self, name, path, target=None):
-                  if name in ("crumb_format", "cli", "cli.crumb"):
-                      raise ImportError(f"{name} is blocked: CrumbLLM must be independent")
-                  return None
-
-          sys.meta_path.insert(0, _Block())
-
+          # This job used to assert the opposite: that crumb-format was not even
+          # importable, proving CrumbLLM carried its own reader. That independence
+          # bought silent divergence — three repositories, three private parsers,
+          # and this package's EJA schemas demanding a crumb_version of "1.5" that
+          # no spec defines. The grammar now lives once, in crumb_core, and the
+          # thing worth enforcing is that we actually use it.
           from crumb_llm.crumb.loader import load_crumb_text
+
           doc = load_crumb_text(
               "BEGIN CRUMB\nv=1.2\nkind=task\nsource=ci\n---\n"
               "[goal]\ng\n[context]\nc\n[constraints]\nn\nEND CRUMB"
           )
           assert doc.kind == "task", doc.kind
 
-          # And confirm no crumb-format module slipped into the import graph.
-          leaked = [m for m in sys.modules if m == "crumb_format" or m.startswith("crumb_format.")]
-          assert not leaked, f"crumb-format leaked into sys.modules: {leaked}"
-          print("independence OK: parsed via bundled reader with crumb-format blocked")
+          assert "crumb_core" in sys.modules, (
+              "parsing did not go through crumb_core — a vendored fork has crept back in"
+          )
+
+          # And no fork may be reintroduced under the old name.
+          import importlib.util
+          assert importlib.util.find_spec("crumb_llm.crumb.spec") is None, (
+              "crumb_llm.crumb.spec is back; the grammar must live only in crumb_core"
+          )
+          print("single-grammar OK: parsed via crumb_core, no vendored fork present")
           PY
 
       - name: Run tests

@@ -16,9 +16,12 @@
 CrumbLLM is the reasoning engine in the CRUMB ecosystem. It reads individual `.crumb` files or complete CRUMB packs and produces useful, inspectable work without silently trusting model output.
 
 ```bash
-pip install crumb-llm
+pip install git+https://github.com/XioAISolutions/CrumbLLM
 crumblm analyze examples/basic.crumb
 ```
+
+> **Not on PyPI yet.** `pip install crumb-llm` currently 404s — the name is
+> unregistered. Install from git or from a clone until the first release lands.
 
 ## What it does
 
@@ -88,17 +91,25 @@ crumblm export-dataset path/to/crumbs --out data/crumb_training.jsonl
 
 ## Install
 
-```bash
-pip install crumb-llm
-```
-
-Optional extras:
+CrumbLLM is **not yet published to PyPI** — `pip install crumb-llm` returns 404.
+Install from git, or from a clone:
 
 ```bash
-pip install 'crumb-llm[openai]'
-pip install 'crumb-llm[anthropic]'
-pip install 'crumb-llm[scratch]'
+pip install git+https://github.com/XioAISolutions/CrumbLLM
+# or, from a clone:
+python -m pip install -e .
 ```
+
+Optional extras (same source, extras appended):
+
+```bash
+pip install 'crumb-llm[openai] @ git+https://github.com/XioAISolutions/CrumbLLM'
+pip install 'crumb-llm[anthropic] @ git+https://github.com/XioAISolutions/CrumbLLM'
+pip install 'crumb-llm[scratch] @ git+https://github.com/XioAISolutions/CrumbLLM'
+```
+
+Reading `.crumb` files requires `crumb_core`, which ships with `crumb-format`
+and is installed automatically as a dependency.
 
 CrumbLLM communicates with supported cloud and local-server providers through standard HTTP, so provider SDKs are optional rather than required.
 
