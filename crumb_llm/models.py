@@ -39,7 +39,7 @@ class CrumbDoc:
     """A single parsed CRUMB file.
 
     ``headers`` and ``sections`` come straight from the CRUMB parser
-    (``crumb_llm.crumb.spec``). We never re-derive them here.
+    (``crumb_core``). We never re-derive them here.
     """
 
     path: str | None

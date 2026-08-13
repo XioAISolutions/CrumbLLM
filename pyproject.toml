@@ -21,7 +21,10 @@ classifiers = [
 
 # CrumbLLM is independent: it bundles its own CRUMB reader
 # (crumb_llm/crumb/spec.py) and needs nothing else to read .crumb files.
-dependencies = []
+# The CRUMB grammar lives once, in crumb_core, shipped by crumb-format.
+# CrumbLLM previously forked a 334-line copy and enforced independence in CI;
+# that independence bought silent divergence across three repositories.
+dependencies = ["crumb-format>=1.2.0"]
 
 [project.optional-dependencies]
 # Cloud providers work over stdlib HTTP, so no extra SDKs are required.

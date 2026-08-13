@@ -1,19 +1,29 @@
 {
   "artifact_type": "eja_experiment",
   "candidate_axiom": {
-    "assumptions": ["local enclosed cabin", "uniform fields"],
-    "excluded_claims": ["global equivalence", "general relativity"],
-    "falsifiers": ["a local observable differs beyond tolerance"],
+    "assumptions": [
+      "local enclosed cabin",
+      "uniform fields"
+    ],
+    "excluded_claims": [
+      "global equivalence",
+      "general relativity"
+    ],
+    "falsifiers": [
+      "a local observable differs beyond tolerance"
+    ],
     "id": "A1",
     "statement": "Within the tested local enclosed regime, matched uniform gravity and frame acceleration produce equivalent local mechanical observations.",
     "status": "supported_within_scope"
   },
-  "crumb_version": "1.5",
+  "eja_schema_version": "1.5",
   "experience": {
     "initial_observational_match": true,
     "initial_observations": [
       {
-        "invariant_results": {"finite_state": true},
+        "invariant_results": {
+          "finite_state": true
+        },
         "metadata": {},
         "observation_id": "A0",
         "sensor_readings": {
@@ -23,10 +33,14 @@
         },
         "state_id": "sha256:a",
         "step": 0,
-        "values": {"scenario_id": "A"}
+        "values": {
+          "scenario_id": "A"
+        }
       },
       {
-        "invariant_results": {"finite_state": true},
+        "invariant_results": {
+          "finite_state": true
+        },
         "metadata": {},
         "observation_id": "B0",
         "sensor_readings": {
@@ -36,7 +50,9 @@
         },
         "state_id": "sha256:b",
         "step": 0,
-        "values": {"scenario_id": "B"}
+        "values": {
+          "scenario_id": "B"
+        }
       }
     ]
   },
@@ -47,22 +63,34 @@
   },
   "hypotheses": [
     {
-      "assumptions": ["faults vary on repeat"],
+      "assumptions": [
+        "faults vary on repeat"
+      ],
       "class": "measurement_error",
-      "evidence_against": ["stable repeats"],
+      "evidence_against": [
+        "stable repeats"
+      ],
       "evidence_for": [],
-      "falsifiers": ["stable repeats"],
+      "falsifiers": [
+        "stable repeats"
+      ],
       "id": "H1",
       "score": 0.1,
       "statement": "The sensors are faulty.",
       "status": "rejected"
     },
     {
-      "assumptions": ["local enclosed cabin"],
+      "assumptions": [
+        "local enclosed cabin"
+      ],
       "class": "reference_frame_equivalence",
       "evidence_against": [],
-      "evidence_for": ["mass test"],
-      "falsifiers": ["different local reading"],
+      "evidence_for": [
+        "mass test"
+      ],
+      "falsifiers": [
+        "different local reading"
+      ],
       "id": "H4",
       "score": 0.9,
       "statement": "Matched uniform gravity and frame acceleration are locally equivalent for tested mechanics.",
@@ -70,7 +98,7 @@
     }
   ],
   "provenance": {
-    "artifact_hash": "sha256:9a66d7e0b4d982af8f0298e0f22c20fe42b4f38ee70ddff1fdc55e9d078dc14e",
+    "artifact_hash": "sha256:07dd9bf6c09717f1ff0370f143189bb3d2bfee4655683e6408417c43e393b8b6",
     "generator": "gaugegap.jump_lab.AbductiveExecutive",
     "hidden_state_exposed_to_agent": false
   },
@@ -80,7 +108,10 @@
   },
   "trajectories": [
     {
-      "discriminated_hypotheses": ["H1", "H4"],
+      "discriminated_hypotheses": [
+        "H1",
+        "H4"
+      ],
       "external_difference": true,
       "intervention": {
         "action_type": "open_external_reference",
@@ -90,19 +121,27 @@
       "local_match": true,
       "observations": [
         {
-          "invariant_results": {"finite_state": true},
+          "invariant_results": {
+            "finite_state": true
+          },
           "metadata": {},
           "observation_id": "A1",
-          "sensor_readings": {"external_cabin_acceleration_up_m_s2": 0.0},
+          "sensor_readings": {
+            "external_cabin_acceleration_up_m_s2": 0.0
+          },
           "state_id": "sha256:c",
           "step": 1,
           "values": {}
         },
         {
-          "invariant_results": {"finite_state": true},
+          "invariant_results": {
+            "finite_state": true
+          },
           "metadata": {},
           "observation_id": "B1",
-          "sensor_readings": {"external_cabin_acceleration_up_m_s2": 9.81},
+          "sensor_readings": {
+            "external_cabin_acceleration_up_m_s2": 9.81
+          },
           "state_id": "sha256:d",
           "step": 1,
           "values": {}

@@ -22,8 +22,11 @@ handoffs.
 `analyze`, `analyze-pack`, `summarize`, `risks`, `next`, `improve`, plus
 `setup` / `status` and `export-dataset`.
 
+> Superseded: these notes describe the intended 0.1.0 release. The package
+> was never published — `pip install crumb-llm` returns 404. Install from git.
+
 ```bash
-pip install crumb-llm
+pip install git+https://github.com/XioAISolutions/CrumbLLM
 crumblm analyze path/to/session.crumb
 ```
 
