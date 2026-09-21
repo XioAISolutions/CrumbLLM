@@ -1,0 +1,406 @@
+{
+  "100": [
+    {
+      "task": "rate-limit",
+      "goal": "Add per-token rate limiting to the public API",
+      "budget_tokens": 100,
+      "transcript_tokens": 785,
+      "critical_facts": 16,
+      "strategies": [
+        {
+          "strategy": "tail",
+          "tokens": 100,
+          "budget": 100,
+          "over_budget": false,
+          "retained": 2,
+          "total": 16,
+          "retention": 0.125,
+          "facts_per_100_tokens": 2.0,
+          "missing": [
+            {
+              "id": "goal_per_token",
+              "kind": "goal",
+              "why": "limiting per IP instead is the wrong fix"
+            },
+            {
+              "id": "key_is_token_not_ip",
+              "kind": "finding",
+              "why": "shared load balancer makes IP useless for isolation"
+            },
+            {
+              "id": "impl_file",
+              "kind": "path",
+              "why": "where the limiter is implemented"
+            },
+            {
+              "id": "register_file",
+              "kind": "path",
+              "why": "where middleware is composed"
+            },
+            {
+              "id": "auth_file",
+              "kind": "path",
+              "why": "source of the token id"
+            },
+            {
+              "id": "token_scope_key",
+              "kind": "finding",
+              "why": "the exact key to limit on"
+            },
+            {
+              "id": "ordering_trap",
+              "kind": "trap",
+              "why": "auth must run before the limiter or every request is anonymous"
+            },
+            {
+              "id": "sliding_window_trap",
+              "kind": "trap",
+              "why": "a fixed window permits a 2x burst that re-starves the pool"
+            },
+            {
+              "id": "redis_config",
+              "kind": "path",
+              "why": "storage already provisioned; do not add a dependency"
+            },
+            {
+              "id": "limits_config",
+              "kind": "path",
+              "why": "must be created; limits are not hardcoded"
+            },
+            {
+              "id": "schema_constraint",
+              "kind": "constraint",
+              "why": "breaking it breaks every client"
+            },
+            {
+              "id": "dependency_constraint",
+              "kind": "constraint",
+              "why": "no new third-party dependencies"
+            },
+            {
+              "id": "repro_commit",
+              "kind": "finding",
+              "why": "the commit the starvation was reproduced on"
+            },
+            {
+              "id": "repro_numbers",
+              "kind": "finding",
+              "why": "the measured regression, so it need not be rediscovered"
+            }
+          ]
+        },
+        {
+          "strategy": "prose",
+          "tokens": 281,
+          "budget": 100,
+          "over_budget": true,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.69,
+          "missing": []
+        },
+        {
+          "strategy": "crumb",
+          "tokens": 317,
+          "budget": 100,
+          "over_budget": true,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.05,
+          "missing": []
+        }
+      ],
+      "measures": "fact retention under a token budget \u2014 a proxy, not task completion"
+    }
+  ],
+  "200": [
+    {
+      "task": "rate-limit",
+      "goal": "Add per-token rate limiting to the public API",
+      "budget_tokens": 200,
+      "transcript_tokens": 785,
+      "critical_facts": 16,
+      "strategies": [
+        {
+          "strategy": "tail",
+          "tokens": 200,
+          "budget": 200,
+          "over_budget": false,
+          "retained": 5,
+          "total": 16,
+          "retention": 0.312,
+          "facts_per_100_tokens": 2.5,
+          "missing": [
+            {
+              "id": "key_is_token_not_ip",
+              "kind": "finding",
+              "why": "shared load balancer makes IP useless for isolation"
+            },
+            {
+              "id": "impl_file",
+              "kind": "path",
+              "why": "where the limiter is implemented"
+            },
+            {
+              "id": "register_file",
+              "kind": "path",
+              "why": "where middleware is composed"
+            },
+            {
+              "id": "auth_file",
+              "kind": "path",
+              "why": "source of the token id"
+            },
+            {
+              "id": "token_scope_key",
+              "kind": "finding",
+              "why": "the exact key to limit on"
+            },
+            {
+              "id": "ordering_trap",
+              "kind": "trap",
+              "why": "auth must run before the limiter or every request is anonymous"
+            },
+            {
+              "id": "redis_config",
+              "kind": "path",
+              "why": "storage already provisioned; do not add a dependency"
+            },
+            {
+              "id": "schema_constraint",
+              "kind": "constraint",
+              "why": "breaking it breaks every client"
+            },
+            {
+              "id": "dependency_constraint",
+              "kind": "constraint",
+              "why": "no new third-party dependencies"
+            },
+            {
+              "id": "repro_commit",
+              "kind": "finding",
+              "why": "the commit the starvation was reproduced on"
+            },
+            {
+              "id": "repro_numbers",
+              "kind": "finding",
+              "why": "the measured regression, so it need not be rediscovered"
+            }
+          ]
+        },
+        {
+          "strategy": "prose",
+          "tokens": 281,
+          "budget": 200,
+          "over_budget": true,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.69,
+          "missing": []
+        },
+        {
+          "strategy": "crumb",
+          "tokens": 317,
+          "budget": 200,
+          "over_budget": true,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.05,
+          "missing": []
+        }
+      ],
+      "measures": "fact retention under a token budget \u2014 a proxy, not task completion"
+    }
+  ],
+  "320": [
+    {
+      "task": "rate-limit",
+      "goal": "Add per-token rate limiting to the public API",
+      "budget_tokens": 320,
+      "transcript_tokens": 785,
+      "critical_facts": 16,
+      "strategies": [
+        {
+          "strategy": "tail",
+          "tokens": 320,
+          "budget": 320,
+          "over_budget": false,
+          "retained": 9,
+          "total": 16,
+          "retention": 0.562,
+          "facts_per_100_tokens": 2.81,
+          "missing": [
+            {
+              "id": "key_is_token_not_ip",
+              "kind": "finding",
+              "why": "shared load balancer makes IP useless for isolation"
+            },
+            {
+              "id": "impl_file",
+              "kind": "path",
+              "why": "where the limiter is implemented"
+            },
+            {
+              "id": "register_file",
+              "kind": "path",
+              "why": "where middleware is composed"
+            },
+            {
+              "id": "auth_file",
+              "kind": "path",
+              "why": "source of the token id"
+            },
+            {
+              "id": "redis_config",
+              "kind": "path",
+              "why": "storage already provisioned; do not add a dependency"
+            },
+            {
+              "id": "schema_constraint",
+              "kind": "constraint",
+              "why": "breaking it breaks every client"
+            },
+            {
+              "id": "dependency_constraint",
+              "kind": "constraint",
+              "why": "no new third-party dependencies"
+            }
+          ]
+        },
+        {
+          "strategy": "prose",
+          "tokens": 281,
+          "budget": 320,
+          "over_budget": false,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.69,
+          "missing": []
+        },
+        {
+          "strategy": "crumb",
+          "tokens": 317,
+          "budget": 320,
+          "over_budget": false,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.05,
+          "missing": []
+        }
+      ],
+      "measures": "fact retention under a token budget \u2014 a proxy, not task completion"
+    }
+  ],
+  "500": [
+    {
+      "task": "rate-limit",
+      "goal": "Add per-token rate limiting to the public API",
+      "budget_tokens": 500,
+      "transcript_tokens": 785,
+      "critical_facts": 16,
+      "strategies": [
+        {
+          "strategy": "tail",
+          "tokens": 500,
+          "budget": 500,
+          "over_budget": false,
+          "retained": 13,
+          "total": 16,
+          "retention": 0.812,
+          "facts_per_100_tokens": 2.6,
+          "missing": [
+            {
+              "id": "impl_file",
+              "kind": "path",
+              "why": "where the limiter is implemented"
+            },
+            {
+              "id": "register_file",
+              "kind": "path",
+              "why": "where middleware is composed"
+            },
+            {
+              "id": "schema_constraint",
+              "kind": "constraint",
+              "why": "breaking it breaks every client"
+            }
+          ]
+        },
+        {
+          "strategy": "prose",
+          "tokens": 281,
+          "budget": 500,
+          "over_budget": false,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.69,
+          "missing": []
+        },
+        {
+          "strategy": "crumb",
+          "tokens": 317,
+          "budget": 500,
+          "over_budget": false,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.05,
+          "missing": []
+        }
+      ],
+      "measures": "fact retention under a token budget \u2014 a proxy, not task completion"
+    }
+  ],
+  "785": [
+    {
+      "task": "rate-limit",
+      "goal": "Add per-token rate limiting to the public API",
+      "budget_tokens": 785,
+      "transcript_tokens": 785,
+      "critical_facts": 16,
+      "strategies": [
+        {
+          "strategy": "tail",
+          "tokens": 785,
+          "budget": 785,
+          "over_budget": false,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 2.04,
+          "missing": []
+        },
+        {
+          "strategy": "prose",
+          "tokens": 281,
+          "budget": 785,
+          "over_budget": false,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.69,
+          "missing": []
+        },
+        {
+          "strategy": "crumb",
+          "tokens": 317,
+          "budget": 785,
+          "over_budget": false,
+          "retained": 16,
+          "total": 16,
+          "retention": 1.0,
+          "facts_per_100_tokens": 5.05,
+          "missing": []
+        }
+      ],
+      "measures": "fact retention under a token budget \u2014 a proxy, not task completion"
+    }
+  ]
+}

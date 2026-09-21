@@ -1,0 +1,30 @@
+{
+  "id": "rate-limit",
+  "project": "api-gateway",
+  "goal": "Add per-token rate limiting to the public API",
+  "transcript": "transcript.md",
+  "handoffs": {
+    "prose": "handoff.prose.md",
+    "crumb": "handoff.crumb"
+  },
+  "note": "The `tail` handoff is not a file: it is derived from transcript.md at run time by keeping the last N tokens, which is what dumping a transcript actually does.",
+  "facts_declared_before_handoffs_were_written": true,
+  "critical_facts": [
+    {"id": "goal_per_token",      "kind": "goal",         "match": "per-token",              "aliases": ["per token"],                       "why": "limiting per IP instead is the wrong fix"},
+    {"id": "key_is_token_not_ip", "kind": "finding",      "match": "not the client ip",       "aliases": ["not the ip", "not per-ip"],        "why": "shared load balancer makes IP useless for isolation"},
+    {"id": "impl_file",           "kind": "path",         "match": "src/gateway/middleware.py","aliases": [],                                  "why": "where the limiter is implemented"},
+    {"id": "register_file",       "kind": "path",         "match": "src/gateway/server.py",   "aliases": [],                                  "why": "where middleware is composed"},
+    {"id": "auth_file",           "kind": "path",         "match": "src/gateway/auth.py",     "aliases": [],                                  "why": "source of the token id"},
+    {"id": "token_scope_key",     "kind": "finding",      "match": "token_id",                "aliases": [],                                  "why": "the exact key to limit on"},
+    {"id": "ordering_trap",       "kind": "trap",         "match": "after",                   "aliases": ["before the limiter"],              "why": "auth must run before the limiter or every request is anonymous"},
+    {"id": "sliding_window_trap", "kind": "trap",         "match": "sliding window",          "aliases": ["sliding-window"],                  "why": "a fixed window permits a 2x burst that re-starves the pool"},
+    {"id": "redis_config",        "kind": "path",         "match": "config/redis.yaml",       "aliases": [],                                  "why": "storage already provisioned; do not add a dependency"},
+    {"id": "limits_config",       "kind": "path",         "match": "config/limits.yaml",      "aliases": [],                                  "why": "must be created; limits are not hardcoded"},
+    {"id": "schema_constraint",   "kind": "constraint",   "match": "response schema",         "aliases": [],                                  "why": "breaking it breaks every client"},
+    {"id": "dependency_constraint","kind": "constraint",  "match": "redis-py",                "aliases": [],                                  "why": "no new third-party dependencies"},
+    {"id": "repro_commit",        "kind": "finding",      "match": "a1b2c3d",                 "aliases": [],                                  "why": "the commit the starvation was reproduced on"},
+    {"id": "repro_numbers",       "kind": "finding",      "match": "4.2s",                    "aliases": ["4.2 s"],                           "why": "the measured regression, so it need not be rediscovered"},
+    {"id": "test_file",           "kind": "verification", "match": "tests/test_rate_limit.py","aliases": [],                                  "why": "where the regression test goes"},
+    {"id": "test_command",        "kind": "verification", "match": "pytest tests/test_rate_limit.py", "aliases": [],                          "why": "how to tell the work succeeded"}
+  ]
+}

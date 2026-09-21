@@ -1,0 +1,32 @@
+BEGIN CRUMB
+v=1.2
+kind=task
+title=Add per-token rate limiting to the public API
+source=session.capture
+project=api-gateway
+---
+[goal]
+Per-token rate limiting so one client cannot starve the shared worker pool.
+Limit on the token, not the client IP — everything is behind a shared LB.
+
+[context]
+Register the limiter in apply_middleware() in src/gateway/server.py; implement
+it in src/gateway/middleware.py matching the existing
+`async __call__(self, scope, receive, send)` shape. src/gateway/auth.py
+populates scope["state"]["token_id"], so the limiter must be registered after
+auth or every request looks anonymous. Counters go in the Redis already at
+config/redis.yaml. Reproduced on main@a1b2c3d: one client at 200 rps takes
+other tokens' p95 from 180ms to 4.2s.
+
+[constraints]
+- No breaking changes to the existing response schema
+- No third-party dependencies beyond redis-py
+- Sliding window, not fixed — a fixed window allows a 2x burst across the
+  boundary, which starves the pool again
+
+[handoff]
+- to=any do=implement the sliding-window limiter in src/gateway/middleware.py
+- to=any do=create config/limits.yaml and read per-token defaults from it
+- to=any do=add tests/test_rate_limit.py, verified by `pytest tests/test_rate_limit.py -q`
+- [x] reproduced the starvation with tools.loadgen on main@a1b2c3d
+END CRUMB

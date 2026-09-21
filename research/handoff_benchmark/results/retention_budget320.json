@@ -1,0 +1,81 @@
+[
+  {
+    "task": "rate-limit",
+    "goal": "Add per-token rate limiting to the public API",
+    "budget_tokens": 320,
+    "transcript_tokens": 785,
+    "critical_facts": 16,
+    "strategies": [
+      {
+        "strategy": "tail",
+        "tokens": 320,
+        "budget": 320,
+        "over_budget": false,
+        "retained": 9,
+        "total": 16,
+        "retention": 0.562,
+        "facts_per_100_tokens": 2.81,
+        "missing": [
+          {
+            "id": "key_is_token_not_ip",
+            "kind": "finding",
+            "why": "shared load balancer makes IP useless for isolation"
+          },
+          {
+            "id": "impl_file",
+            "kind": "path",
+            "why": "where the limiter is implemented"
+          },
+          {
+            "id": "register_file",
+            "kind": "path",
+            "why": "where middleware is composed"
+          },
+          {
+            "id": "auth_file",
+            "kind": "path",
+            "why": "source of the token id"
+          },
+          {
+            "id": "redis_config",
+            "kind": "path",
+            "why": "storage already provisioned; do not add a dependency"
+          },
+          {
+            "id": "schema_constraint",
+            "kind": "constraint",
+            "why": "breaking it breaks every client"
+          },
+          {
+            "id": "dependency_constraint",
+            "kind": "constraint",
+            "why": "no new third-party dependencies"
+          }
+        ]
+      },
+      {
+        "strategy": "prose",
+        "tokens": 281,
+        "budget": 320,
+        "over_budget": false,
+        "retained": 16,
+        "total": 16,
+        "retention": 1.0,
+        "facts_per_100_tokens": 5.69,
+        "missing": []
+      },
+      {
+        "strategy": "crumb",
+        "tokens": 317,
+        "budget": 320,
+        "over_budget": false,
+        "retained": 16,
+        "total": 16,
+        "retention": 1.0,
+        "facts_per_100_tokens": 5.05,
+        "missing": []
+      }
+    ],
+    "measures": "fact retention under a token budget \u2014 a proxy, not task completion"
+  }
+]
