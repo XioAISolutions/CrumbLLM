@@ -1,5 +1,14 @@
 # CRUMB EJA v0.7
 
+> **A separate package, on purpose.** CRUMB EJA is a discovery-artifact format.
+> It is not the CRUMB handoff format, it shares no code with `crumb_llm`, and
+> its claims are different ones. It lived under `crumb_llm/eja/` until it was
+> found to import nothing from its host — so it became `crumb_eja`, with its
+> own `crumb-eja` command. `crumblm eja ...` still works for existing scripts.
+>
+> Moving it to its own repository is now a directory move plus a
+> `pyproject.toml`. CI enforces the decoupling that keeps it that cheap.
+
 CRUMB EJA stores a complete discovery handoff rather than a prose-only context
 summary. An artifact keeps raw observations, the recorded surprise, competing or
 generated hypotheses, ordered interventions, trajectories, a scoped candidate
@@ -8,11 +17,11 @@ axiom, deductions, verifier output, metrics, and provenance.
 ## Single artifacts
 
 ```bash
-crumblm eja validate examples/einstein-elevator.eja.json
-crumblm eja summarize examples/einstein-elevator.eja.json
-crumblm eja replay-plan examples/einstein-elevator.eja.json
+crumb-eja validate crumb_eja/examples/einstein-elevator.eja.json
+crumb-eja summarize crumb_eja/examples/einstein-elevator.eja.json
+crumb-eja replay-plan crumb_eja/examples/einstein-elevator.eja.json
 
-python -m crumb_llm.eja validate examples/einstein-elevator.eja.json
+python -m crumb_eja validate crumb_eja/examples/einstein-elevator.eja.json
 ```
 
 Validation rejects missing falsifiers, collapsed hypothesis diversity, unclear
@@ -21,11 +30,11 @@ scope, hidden-state exposure, and mismatched canonical hashes.
 ## Pack validation and scientific audit
 
 ```bash
-crumblm eja validate-pack artifacts \
+crumb-eja validate-pack artifacts \
   --out artifacts/eja-pack.json \
   --html artifacts/eja-pack.html
 
-crumblm eja audit-pack artifacts \
+crumb-eja audit-pack artifacts \
   --out artifacts/eja-audit.json \
   --html artifacts/eja-audit.html
 ```
@@ -36,7 +45,7 @@ status versus verifier verdict, replication consistency, and lineage integrity.
 ## Evidence-reference and blind-protocol audit
 
 ```bash
-crumblm eja evidence-pack artifacts \
+crumb-eja evidence-pack artifacts \
   --out artifacts/eja-evidence.json \
   --html artifacts/eja-evidence.html
 ```
@@ -49,7 +58,7 @@ and prompt hashes, and declared hypothesis origin.
 ## Sealed challenge and abstention audit
 
 ```bash
-crumblm eja challenge-pack artifacts/jump-lab-challenge \
+crumb-eja challenge-pack artifacts/jump-lab-challenge \
   --out artifacts/eja-challenge-audit.json \
   --html artifacts/eja-challenge-audit.html
 ```
@@ -61,7 +70,7 @@ evidence, candidate-axiom behavior after abstention, and false-discovery flags.
 ## Frozen calibration audit
 
 ```bash
-crumblm eja calibration-pack \
+crumb-eja calibration-pack \
   artifacts/jump-lab-calibration/calibration-suite.json \
   --out artifacts/jump-lab-calibration/calibration-audit.json \
   --html artifacts/jump-lab-calibration/calibration-audit.html
@@ -78,7 +87,7 @@ from a committed grammar instead of selecting from a pre-registered list of
 complete models.
 
 ```bash
-crumblm eja synthesis-pack artifacts/jump-lab-synthesis \
+crumb-eja synthesis-pack artifacts/jump-lab-synthesis \
   --suite artifacts/jump-lab-synthesis/synthesis-suite.json \
   --out artifacts/jump-lab-synthesis/synthesis-audit.json \
   --html artifacts/jump-lab-synthesis/synthesis-audit.html
@@ -118,7 +127,7 @@ grammar-commitment validity.
 The companion schema is:
 
 ```text
-schemas/eja-synthesis-v1.schema.json
+crumb_eja/schemas/eja-synthesis-v1.schema.json
 ```
 
 This lane is intentionally called **finite-grammar symbolic synthesis**. A
@@ -129,7 +138,7 @@ operators, variables, or scientific concepts.
 ## Lineage graph
 
 ```bash
-crumblm eja lineage-pack artifacts \
+crumb-eja lineage-pack artifacts \
   --out artifacts/eja-lineage.json \
   --html artifacts/eja-lineage.html
 ```
@@ -140,7 +149,7 @@ derived from another. It does not prove scientific implication.
 ## Reproducibility manifest
 
 ```bash
-crumblm eja manifest-pack artifacts --out artifacts/eja-manifest.json
+crumb-eja manifest-pack artifacts --out artifacts/eja-manifest.json
 ```
 
 The manifest records paths, canonical hashes, experiments, worlds, seeds,
@@ -150,7 +159,7 @@ manifest itself.
 ## Deterministic review bundle
 
 ```bash
-crumblm eja bundle-pack artifacts \
+crumb-eja bundle-pack artifacts \
   --out artifacts/eja-review-bundle.zip \
   --report artifacts/eja-review-bundle-result.json
 ```

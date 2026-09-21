@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from crumb_llm.eja import (
+from crumb_eja import (
     artifact_hash,
     compare_artifacts,
     load_artifact,
@@ -12,7 +12,7 @@ from crumb_llm.eja import (
     validate_artifact,
 )
 
-EXAMPLE = Path(__file__).parents[1] / "examples" / "einstein-elevator.eja.json"
+EXAMPLE = Path(__file__).parents[2] / "crumb_eja" / "examples" / "einstein-elevator.eja.json"
 
 
 def test_gaugegap_example_validates_and_hashes():

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from crumb_llm.eja import (
+from crumb_eja import (
     artifact_hash,
     audit_evidence_artifact,
     audit_evidence_pack,
@@ -11,9 +11,9 @@ from crumb_llm.eja import (
     build_review_bundle,
     load_artifact,
 )
-from crumb_llm.eja.cli import build_parser
+from crumb_eja.cli import build_parser
 
-EXAMPLE = Path(__file__).parents[1] / "examples" / "einstein-elevator.eja.json"
+EXAMPLE = Path(__file__).parents[2] / "crumb_eja" / "examples" / "einstein-elevator.eja.json"
 
 
 def _blind_artifact() -> dict:

@@ -4,7 +4,7 @@ import copy
 import json
 from pathlib import Path
 
-from crumb_llm.eja import (
+from crumb_eja import (
     artifact_hash,
     audit_pack,
     build_lineage,
@@ -13,9 +13,9 @@ from crumb_llm.eja import (
     render_audit_html,
     render_lineage_html,
 )
-from crumb_llm.eja.cli import build_parser
+from crumb_eja.cli import build_parser
 
-EXAMPLE = Path(__file__).parents[1] / "examples" / "einstein-elevator.eja.json"
+EXAMPLE = Path(__file__).parents[2] / "crumb_eja" / "examples" / "einstein-elevator.eja.json"
 
 
 def _write(root: Path, name: str, artifact: dict) -> Path:

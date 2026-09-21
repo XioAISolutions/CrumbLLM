@@ -5,17 +5,17 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
-from crumb_llm.eja import (
+from crumb_eja import (
     artifact_hash,
     audit_calibration_report,
     calibration_commitment_payload,
     load_artifact,
     render_calibration_html,
 )
-from crumb_llm.eja.cli import build_parser
-from crumb_llm.eja.model import canonical_json
+from crumb_eja.cli import build_parser
+from crumb_eja.model import canonical_json
 
-EXAMPLE = Path(__file__).parents[1] / "examples" / "einstein-elevator.eja.json"
+EXAMPLE = Path(__file__).parents[2] / "crumb_eja" / "examples" / "einstein-elevator.eja.json"
 THRESHOLD = {"minimum_score": 0.75, "minimum_margin": 0.05}
 CALIBRATION_SEEDS = [2101]
 TEST_SEEDS = [2201]

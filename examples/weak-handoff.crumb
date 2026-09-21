@@ -1,0 +1,21 @@
+BEGIN CRUMB
+v=1.2
+kind=task
+title=Fix the login thing
+source=cursor.agent
+project=api-gateway
+---
+[goal]
+Make login better.
+
+[context]
+We talked about this yesterday and agreed the current approach is not great.
+The team knows the background. Someone should clean it up before the release.
+
+[constraints]
+- Don't break anything
+
+[handoff]
+- do=clean up the auth code in src/auth/session_store.py
+- do=probably also look at the middleware
+END CRUMB
