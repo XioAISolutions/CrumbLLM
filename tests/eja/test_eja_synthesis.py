@@ -5,7 +5,7 @@ import json
 from hashlib import sha256
 from pathlib import Path
 
-from crumb_llm.eja import (
+from crumb_eja import (
     artifact_hash,
     audit_synthesis_artifact,
     audit_synthesis_pack,
@@ -14,10 +14,10 @@ from crumb_llm.eja import (
     render_synthesis_html,
     synthesis_commitment_payload,
 )
-from crumb_llm.eja.cli import build_parser
-from crumb_llm.eja.model import canonical_json
+from crumb_eja.cli import build_parser
+from crumb_eja.model import canonical_json
 
-EXAMPLE = Path(__file__).parents[1] / "examples" / "einstein-elevator.eja.json"
+EXAMPLE = Path(__file__).parents[2] / "crumb_eja" / "examples" / "einstein-elevator.eja.json"
 
 
 def _commitment(value: object) -> str:

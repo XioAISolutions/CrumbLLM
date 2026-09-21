@@ -290,7 +290,7 @@ def register_eja_subparser(subparsers: argparse._SubParsersAction) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="python -m crumb_llm.eja")
+    parser = argparse.ArgumentParser(prog="python -m crumb_eja")
     commands = parser.add_subparsers(dest="eja_command", required=True)
     _add_commands(commands)
     return parser

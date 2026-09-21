@@ -4,10 +4,10 @@ import json
 from pathlib import Path
 import shutil
 
-from crumb_llm.eja import render_pack_html, summarize_pack, validate_pack
-from crumb_llm.eja.cli import build_parser
+from crumb_eja import render_pack_html, summarize_pack, validate_pack
+from crumb_eja.cli import build_parser
 
-EXAMPLE = Path(__file__).parents[1] / "examples" / "einstein-elevator.eja.json"
+EXAMPLE = Path(__file__).parents[2] / "crumb_eja" / "examples" / "einstein-elevator.eja.json"
 
 
 def _pack(tmp_path: Path) -> Path:

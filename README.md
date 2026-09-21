@@ -211,14 +211,18 @@ print(result.text, result.warnings, result.ok)
 
 ## CRUMB EJA
 
-CrumbLLM also carries **CRUMB EJA**, a separate discovery-artifact format with its own validators, audits, and review bundles. It shares the CLI but nothing else — different format, different claims, different audience.
+**CRUMB EJA** is a discovery-artifact format with its own validators, audits, and review bundles. It is a different format for a different audience, and it now lives in its own top-level package, `crumb_eja`, with its own command:
 
 ```bash
-crumblm eja validate examples/einstein-elevator.eja.json
-crumblm eja audit-pack artifacts --out artifacts/eja-audit.json
+crumb-eja validate crumb_eja/examples/einstein-elevator.eja.json
+crumb-eja audit-pack artifacts --out artifacts/eja-audit.json
+
+crumblm eja validate ...   # still works; kept for existing scripts
 ```
 
-Full documentation: [`crumb_llm/eja/README.md`](crumb_llm/eja/README.md).
+It imports nothing from `crumb_llm`, which is what made that separation a directory move rather than a refactor. Splitting it into its own repository is now a `git mv` plus a `pyproject.toml`.
+
+Full documentation: [`crumb_eja/README.md`](crumb_eja/README.md).
 
 ---
 

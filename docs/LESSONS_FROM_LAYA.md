@@ -149,7 +149,9 @@ Laya's importable package is **1,436 lines** across seven files. Everything else
 
 CrumbLLM is 5,605 lines, and **55% of that is CRUMB EJA** — a discovery-artifact format with its own schemas, audits, challenge protocols, calibration gates and synthesis lanes. EJA may well be the more interesting work. It is also a different product for a different audience, sharing a CLI and a README with the handoff analyser, and its presence roughly triples the surface a first-time reader has to parse before deciding whether this repository is for them.
 
-*Partially addressed in this branch:* the README now names EJA as a separate thing and links to its own documentation rather than mixing its commands into the main flow. **The real fix is to split it into its own repository**, and that is a call for the maintainer, not for this branch. See [§5](#5-what-this-branch-did-not-do).
+*Addressed in this branch, and more cheaply than this section first estimated.* The estimate was "~a day". Grepping the imports first showed why it was wrong: **`crumb_llm/eja/` imported nothing from the rest of `crumb_llm`** — the entire coupling was one line in `cli.py`. So it became a top-level `crumb_eja` package with its own `crumb-eja` command, `crumblm eja ...` kept working for existing scripts, and a CI job now enforces that the decoupling holds. Moving it to its own repository is a `git mv` plus a `pyproject.toml`.
+
+The lesson is not about EJA. **The cost estimate was wrong by an order of magnitude because it was made by reading the directory tree rather than the import graph**, and the same mistake is available on every "that would be a big refactor" in this repository.
 
 ### 4.6 Presentation details that cost nothing
 
@@ -170,7 +172,7 @@ Stated plainly, because a list of recommendations with the expensive ones quietl
 
 | not done | why | cost |
 |---|---|---|
-| **Split EJA into its own repository** | 55% of the package, its own schemas and audiences; a maintainer's call, not a drive-by refactor | ~a day, plus a new repo and CI |
+| **Create the separate EJA repository** | the decoupling is done and CI-enforced; creating a public repository under the organisation is an outward-facing act, so it waits on the maintainer | ~20 minutes, now that it is a `git mv` |
 | **Publish `crumb-format` 1.2.0 and `crumb-llm` to PyPI** | needs credentials this session does not have; until then every install is a git URL, which roughly halves the people who will try it | ~an hour |
 | **Build the handoff benchmark** | the real unlock, and it is a project, not a commit — see §6 | ~a week |
 | **A hosted demo, a logo, a Colab badge** | presentation work that should follow the benchmark, not precede it | ~a day |

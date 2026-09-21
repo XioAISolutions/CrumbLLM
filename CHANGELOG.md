@@ -7,6 +7,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **The handoff benchmark** (`research/handoff_benchmark/`). Two questions kept
+  apart: whether a structured handoff helps a fresh agent *finish* (protocol
+  pre-registered in `protocol.md`, with five predictions recorded before any
+  run — **not run**), and what survives a handoff at a fixed token budget
+  (measured). The measured headline does not flatter this project: at a budget
+  that gives the transcript baseline *more* room than either authored handoff,
+  prose and CRUMB both retain 16/16 declared facts, and prose does it in 13%
+  fewer tokens. The one robust finding is that any authored handoff beats a
+  truncated transcript (16/16 against 9/16), and that the losses are
+  systematically the constraints, because constraints are stated at the start
+  of a session and truncation eats the start. Tests assert both unflattering
+  results so the write-up cannot drift away from them.
+- `crumb-eja`, a console script for CRUMB EJA.
 - **`crumblm score` — readiness scoring with no model, no keys and no network.**
   Eight published rules over 17 weight units decide whether the next agent can
   actually continue from a handoff: is there a goal, is the context anchored to
@@ -54,6 +67,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   when the vendored fork was deleted.
 
 ### Changed
+- **CRUMB EJA is its own package.** `crumb_llm/eja/` is now `crumb_eja/`, with
+  its schemas and example alongside it and its tests under `tests/eja/`. It was
+  55% of the package by line count and a different format for a different
+  audience, sharing only a CLI. The move cost minutes rather than the day it
+  was estimated at, because `crumb_llm/eja/` turned out to import **nothing**
+  from the rest of `crumb_llm` — the whole coupling was one line in `cli.py`.
+  A CI job now enforces that, since it is what keeps a future split into a
+  separate repository a `git mv` plus a `pyproject.toml`. `crumblm eja ...`
+  still works; `crumb-eja` is the command going forward.
 - **The CRUMB grammar now lives in one place.** `crumb_llm/crumb/spec.py`, a
   334-line fork of the canonical parser, is deleted; `parser_adapter` delegates
   to `crumb_core` instead. The fork's docstring promised it was "kept faithful"

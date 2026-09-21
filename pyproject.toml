@@ -48,13 +48,19 @@ Repository = "https://github.com/XioAISolutions/crumb-llm"
 
 [project.scripts]
 crumblm = "crumb_llm.cli:main"
+# CRUMB EJA ships in this distribution but is a separate package with its own
+# command: a discovery-artifact format, not a handoff format. It imports
+# nothing from crumb_llm, so moving it to its own repository is a directory
+# move plus a pyproject -- see crumb_eja/README.md.
+crumb-eja = "crumb_eja.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["crumb_llm*"]
+include = ["crumb_llm*", "crumb_eja*"]
 
 [tool.setuptools.package-data]
 "crumb_llm" = ["prompts/*.md"]
+"crumb_eja" = ["schemas/*.json", "examples/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from crumb_llm.cli import main
 
-EXAMPLE = Path(__file__).parents[1] / "examples" / "einstein-elevator.eja.json"
+EXAMPLE = Path(__file__).parents[2] / "crumb_eja" / "examples" / "einstein-elevator.eja.json"
 
 
 def test_root_cli_registers_eja_validate(capsys):

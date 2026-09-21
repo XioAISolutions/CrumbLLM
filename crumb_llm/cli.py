@@ -19,7 +19,7 @@ from crumb_llm.score import (
     score_doc,
     score_pack,
 )
-from crumb_llm.eja.cli import register_eja_subparser
+from crumb_eja.cli import register_eja_subparser
 
 
 # ---------------------------------------------------------------------------
@@ -258,6 +258,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", default="data/crumb_training.jsonl")
     p.set_defaults(func=cmd_export_dataset)
 
+    # CRUMB EJA is a different format for a different audience: discovery
+    # artifacts, not handoffs. It shares this CLI for backwards compatibility
+    # and nothing else -- it imports nothing from crumb_llm, which is what made
+    # moving it to its own top-level package a rename. `crumb-eja` is the
+    # command going forward; this subparser stays so existing scripts keep
+    # working.
     register_eja_subparser(sub)
     return parser
 

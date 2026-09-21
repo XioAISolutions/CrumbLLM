@@ -67,13 +67,40 @@ jobs:
           print("single-grammar OK: parsed via crumb_core, no vendored fork present")
           PY
 
+      - name: Enforce that crumb_eja stays separable from crumb_llm
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys
+
+          # EJA is a different format for a different audience, and it is 55% of
+          # this repository by line count. It was moved to its own top-level
+          # package precisely because it imported nothing from crumb_llm, which
+          # made the move a rename rather than a refactor -- and which keeps the
+          # eventual split into its own repository a `git mv` plus a pyproject.
+          # One convenience import from crumb_llm would quietly cost that, so
+          # the property is enforced rather than hoped for.
+          offenders = []
+          for path in pathlib.Path("crumb_eja").rglob("*.py"):
+              for number, line in enumerate(path.read_text().splitlines(), 1):
+                  if re.search(r"\b(from|import)\s+crumb_llm\b", line):
+                      offenders.append(f"{path}:{number}: {line.strip()}")
+          if offenders:
+              print("crumb_eja must not import from crumb_llm:", file=sys.stderr)
+              print("\n".join(offenders), file=sys.stderr)
+              raise SystemExit(1)
+          print("OK: crumb_eja imports nothing from crumb_llm")
+          PY
+
       - name: Run tests
         run: pytest -q
 
       - name: Smoke-test the CLI
         run: |
           crumblm --help
+          crumblm score examples/basic.crumb
           crumblm analyze examples/basic.crumb
+          crumb-eja validate crumb_eja/examples/einstein-elevator.eja.json
+          crumblm eja validate crumb_eja/examples/einstein-elevator.eja.json
 
   build:
     name: build & verify the wheel's dependency surface
