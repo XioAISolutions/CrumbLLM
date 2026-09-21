@@ -1,0 +1,362 @@
+<title>Handoff Readiness</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #f6f6fa;
+    --surface: #ffffff;
+    --sunk: #f0f0f6;
+    --ink: #1c2030;
+    --muted: #6a6e85;
+    --faint: #9a9eb2;
+    --line: #e3e3ee;
+    --accent: #6d3fd4;
+    --pass: #0e8f61;
+    --fail: #b8420f;
+    --pass-soft: #e4f6ee;
+    --fail-soft: #fceee7;
+    --shadow: 0 1px 2px rgba(28, 32, 48, .06), 0 8px 24px -16px rgba(28, 32, 48, .25);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #101320;
+      --surface: #191d2b;
+      --sunk: #141827;
+      --ink: #e6e8f0;
+      --muted: #969cb4;
+      --faint: #6b7089;
+      --line: #272c3e;
+      --accent: #a78bfa;
+      --pass: #4ade80;
+      --fail: #fb923c;
+      --pass-soft: #14301f;
+      --fail-soft: #33210f;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -16px rgba(0, 0, 0, .8);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #101320;
+    --surface: #191d2b;
+    --sunk: #141827;
+    --ink: #e6e8f0;
+    --muted: #969cb4;
+    --faint: #6b7089;
+    --line: #272c3e;
+    --accent: #a78bfa;
+    --pass: #4ade80;
+    --fail: #fb923c;
+    --pass-soft: #14301f;
+    --fail-soft: #33210f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -16px rgba(0, 0, 0, .8);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    padding-inline: 16px;
+    padding-block: 28px 44px;
+  }
+  .wrap { max-width: 1180px; margin-inline: auto; }
+  code, pre, textarea, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  /* --- masthead --- */
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin-bottom: 6px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+  h1 .dim { color: var(--muted); font-weight: 400; }
+  .tag {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px; padding: 2px 9px;
+  }
+  .lede { color: var(--muted); max-width: 66ch; margin: 0 0 22px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  /* --- layout --- */
+  .panes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 18px; align-items: start; }
+  @media (max-width: 860px) { .panes { grid-template-columns: minmax(0, 1fr); } }
+
+  .pane { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; }
+  .pane-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--sunk);
+  }
+  .pane-title { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-right: auto; }
+
+  button.sample {
+    font: inherit; font-size: 12px; font-family: "IBM Plex Mono", monospace;
+    color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 6px; padding: 3px 9px; cursor: pointer;
+  }
+  button.sample:hover { border-color: var(--accent); color: var(--accent); }
+  button.sample[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--sunk); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  textarea {
+    display: block; width: 100%; min-height: 460px; resize: vertical;
+    border: 0; padding: 14px; background: var(--surface); color: var(--ink);
+    font-size: 12.5px; line-height: 1.7; tab-size: 2;
+  }
+  textarea:focus { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+
+  /* --- readout --- */
+  .readout { padding: 16px 16px 6px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 18px; }
+  .figure { font-family: "IBM Plex Mono", monospace; font-size: 54px; font-weight: 600; line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .band { font-size: 17px; font-weight: 600; text-transform: lowercase; }
+  .band-why { color: var(--muted); font-size: 13.5px; flex-basis: 100%; margin-top: 2px; }
+
+  /* The ledger is one segment per weight unit, grouped by rule: the score's
+     arithmetic made visible, rather than a generic progress bar. */
+  .ledger { display: flex; gap: 7px; padding: 14px 16px 12px; flex-wrap: wrap; }
+  .ledger-group { display: flex; gap: 2px; }
+  .seg { width: 15px; height: 9px; border-radius: 2px; background: var(--line); }
+  .seg.on { background: var(--pass); }
+  .seg.off { background: var(--fail); opacity: .38; }
+  .ledger-caption { padding: 0 16px 14px; color: var(--faint); font-size: 12px; font-family: "IBM Plex Mono", monospace; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px; }
+  .chip {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px;
+    border: 1px solid var(--line); border-radius: 5px; padding: 2px 8px; color: var(--muted);
+  }
+  .chip.warn { border-color: var(--fail); color: var(--fail); }
+
+  /* --- rules --- */
+  .rules { border-top: 1px solid var(--line); }
+  .rule { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--line); }
+  .rule:last-child { border-bottom: 0; }
+  .mark { font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600; line-height: 1.5; }
+  .rule.pass .mark { color: var(--pass); }
+  .rule.fail .mark { color: var(--fail); }
+  .rule-id { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 500; }
+  .w { color: var(--faint); font-weight: 400; font-size: 11.5px; }
+  .why { color: var(--muted); font-size: 13px; }
+  .evidence { margin: 6px 0 0; padding: 0; list-style: none; }
+  .evidence li {
+    font-family: "IBM Plex Mono", monospace; font-size: 11.5px; line-height: 1.6;
+    color: var(--muted); background: var(--sunk); border-left: 2px solid var(--line);
+    padding: 3px 8px; margin-bottom: 3px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  .rule.fail .evidence li { border-left-color: var(--fail); background: var(--fail-soft); }
+  .rule.pass .evidence li { border-left-color: var(--pass); background: var(--pass-soft); }
+
+  .problems { margin: 0; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--fail-soft); color: var(--fail); font-size: 12.5px; font-family: "IBM Plex Mono", monospace; }
+
+  /* --- footer --- */
+  .note { margin-top: 22px; color: var(--muted); font-size: 13px; max-width: 74ch; }
+  .note strong { color: var(--ink); font-weight: 500; }
+  .note code { font-size: 12px; background: var(--sunk); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+  a { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Handoff readiness <span class="dim">/ CRUMB</span></h1>
+    <span class="tag">no model · no network</span>
+  </header>
+  <p class="lede">
+    Eight rules over 17 weight units decide whether the next agent can continue from a handoff.
+    Every verdict shows the source lines it matched or rejected, so you can
+    <strong>disagree with the rule rather than with the number</strong>. Scoring runs in this
+    tab — nothing is sent anywhere.
+  </p>
+
+  <div class="panes">
+    <section class="pane">
+      <div class="pane-head">
+        <span class="pane-title">.crumb</span>
+        <button class="sample" id="s-weak" type="button" data-sample="weak">weak</button>
+        <button class="sample" id="s-basic" type="button" data-sample="basic">basic</button>
+        <button class="sample" id="s-session" type="button" data-sample="session">session</button>
+      </div>
+      <label class="sr" for="src" hidden>CRUMB source</label>
+      <textarea id="src" spellcheck="false" aria-label="CRUMB source"></textarea>
+    </section>
+
+    <section class="pane" aria-live="polite">
+      <div class="pane-head"><span class="pane-title">readout</span><span class="chip mono" id="latency">—</span></div>
+      <div id="problems"></div>
+      <div class="readout">
+        <span class="figure" id="figure">0.00</span>
+        <span class="band" id="band">—</span>
+        <span class="band-why" id="band-why"></span>
+      </div>
+      <div class="ledger" id="ledger"></div>
+      <p class="ledger-caption" id="ledger-caption"></p>
+      <div class="chips" id="chips"></div>
+      <div class="rules" id="rules"></div>
+    </section>
+  </div>
+
+  <p class="note">
+    <strong>The number is weighted rule coverage, not a probability.</strong> 0.82 means
+    fourteen of seventeen weight units are satisfied — it is not an 82% chance of success, and
+    nothing here should be read that way. The rules check structure, not truth: a handoff can
+    cite a real file, score <em>strong</em>, and still be wrong about what that file does.
+  </p>
+  <p class="note">
+    This page runs the same rules as <code>crumblm score</code>, from
+    <code>web/crumb-score.js</code> in the repository — a parity test asserts, signal by signal,
+    that it agrees with the Python implementation on every CRUMB the project ships.
+  </p>
+</div>
+
+<script src="crumb-score.js"></script>
+<script>
+  const SAMPLES = {
+    weak: `BEGIN CRUMB
+v=1.2
+kind=task
+title=Fix the login thing
+source=cursor.agent
+project=api-gateway
+---
+[goal]
+Make login better.
+
+[context]
+We talked about this yesterday and agreed the current approach is not great.
+The team knows the background. Someone should clean it up before the release.
+
+[constraints]
+- Don't break anything
+
+[handoff]
+- do=clean up the auth code in src/auth/session_store.py
+- do=probably also look at the middleware
+END CRUMB`,
+    basic: `BEGIN CRUMB
+v=1.2
+kind=task
+title=Add rate limiting to the public API
+source=cursor.agent
+project=api-gateway
+---
+[goal]
+Add per-token rate limiting to the public API so a single client cannot
+exhaust the shared worker pool.
+
+[context]
+The gateway lives in src/gateway/server.py and routes through
+src/gateway/middleware.py. There is no rate limiter today. We saw one client
+send 12k req/min last week and starve everyone else. A Redis instance is
+already available at config/redis.yaml.
+
+[constraints]
+- No breaking changes to the existing response schema
+- Limits must be configurable per API token, not global
+- Add a regression test before merging
+- Do not add new third-party dependencies beyond redis-py
+
+[handoff]
+- to=any   do=implement a sliding-window limiter in src/gateway/middleware.py
+- to=any   do=load per-token limits from config/limits.yaml
+- to=any   do=add a test in tests/test_rate_limit.py that fails on main
+- to=human do=review the diff and approve the limit defaults
+- [x] reproduced the starvation with a load test on main@a1b2c3d
+END CRUMB`,
+    session: `BEGIN CRUMB
+v=1.2
+kind=task
+title=Investigate slow checkout endpoint
+source=session.capture
+project=storefront
+---
+[goal]
+Find out why /checkout p95 latency jumped from 200ms to 1.4s after the
+Tuesday deploy.
+
+[context]
+The regression started with the deploy that added src/checkout/tax.py. Traces
+show most time is spent in compute_tax(). The cart service in
+src/checkout/cart.py calls it once per line item with no caching.
+
+[constraints]
+- Read-only investigation, no fixes in this session
+- Capture findings for the next agent
+
+[handoff]
+- to=any do=confirm compute_tax() is the hotspot with a profiler
+- to=any do=document whether per-item calls can be batched
+END CRUMB`,
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const src = $("src");
+
+  function esc(s) {
+    return String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  }
+
+  function render(result, micros) {
+    $("figure").textContent = result.score.toFixed(2);
+    $("figure").style.color = result.score >= 0.6 ? "var(--pass)" : "var(--fail)";
+    $("band").textContent = result.band;
+    $("band").style.color = result.score >= 0.6 ? "var(--pass)" : "var(--fail)";
+    $("band-why").textContent = result.band_reason;
+    $("latency").textContent = micros < 1000 ? `${micros} µs` : `${(micros / 1000).toFixed(1)} ms`;
+
+    $("problems").innerHTML = result.problems.length
+      ? `<p class="problems">${result.problems.map(esc).join(" · ")}</p>` : "";
+
+    $("ledger").innerHTML = result.signals.map((s) =>
+      `<span class="ledger-group" title="${esc(s.id)} — weight ${s.weight}">` +
+      Array.from({ length: s.weight }, () => `<span class="seg ${s.passed ? "on" : "off"}"></span>`).join("") +
+      `</span>`).join("");
+    $("ledger-caption").textContent =
+      `${result.weight_earned}/${result.weight_total} weight units satisfied — one segment per unit, grouped by rule`;
+
+    const chips = [`kind: ${result.handoff_kind}`];
+    if (result.blocking_on_human) chips.push("blocked: a directive is to=human");
+    $("chips").innerHTML = chips.map((c, i) =>
+      `<span class="chip${i && result.blocking_on_human ? " warn" : ""}">${esc(c)}</span>`).join("");
+
+    $("rules").innerHTML = result.signals.map((s) => `
+      <div class="rule ${s.passed ? "pass" : "fail"}">
+        <span class="mark">${s.passed ? "OK" : "!!"}</span>
+        <div>
+          <div class="rule-id">${esc(s.id)} <span class="w">weight ${s.weight}</span></div>
+          <div class="why">${esc(s.reason)}</div>
+          ${s.evidence.length ? `<ul class="evidence">${s.evidence.map((e) => `<li>${esc(e)}</li>`).join("")}</ul>` : ""}
+        </div>
+      </div>`).join("");
+  }
+
+  function score() {
+    const t0 = performance.now();
+    const result = window.CrumbScore.scoreText(src.value);
+    const micros = Math.round((performance.now() - t0) * 1000);
+    render(result, micros);
+  }
+
+  let timer;
+  src.addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { score(); markSample(null); }, 120);
+  });
+
+  function markSample(name) {
+    document.querySelectorAll("button.sample").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.sample === name)));
+  }
+
+  document.querySelectorAll("button.sample").forEach((b) => {
+    b.addEventListener("click", () => {
+      src.value = SAMPLES[b.dataset.sample];
+      markSample(b.dataset.sample);
+      score();
+    });
+  });
+
+  // Open on the weak example: the first frame should show the tool catching
+  // something, not an empty box or a green tick.
+  src.value = SAMPLES.weak;
+  markSample("weak");
+  score();
+</script>

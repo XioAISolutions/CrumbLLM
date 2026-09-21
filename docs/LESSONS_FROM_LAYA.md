@@ -166,17 +166,22 @@ Observed in Laya, absent here, cheap to add:
 
 ---
 
-## 5. What this branch did not do
+## 5. What is done and what is left
 
 Stated plainly, because a list of recommendations with the expensive ones quietly omitted is the same failure as a benchmark table with the losses omitted.
+
+**Done since this document was first written:** the EJA decoupling ([§4.5](#45-keep-the-package-small-and-the-repository-legible)), the handoff benchmark harness and its first measurement ([§6](#6-the-one-lever-that-actually-moves-this)), a client-side demo of the scorer, a logo, and `RELEASE.md`.
+
+**Left:**
 
 | not done | why | cost |
 |---|---|---|
 | **Create the separate EJA repository** | the decoupling is done and CI-enforced; creating a public repository under the organisation is an outward-facing act, so it waits on the maintainer | ~20 minutes, now that it is a `git mv` |
-| **Publish `crumb-format` 1.2.0 and `crumb-llm` to PyPI** | needs credentials this session does not have; until then every install is a git URL, which roughly halves the people who will try it | ~an hour |
-| **Build the handoff benchmark** | the real unlock, and it is a project, not a commit — see §6 | ~a week |
-| **A hosted demo, a logo, a Colab badge** | presentation work that should follow the benchmark, not precede it | ~a day |
-| **Calibrate the rule weights** | there is no outcome dataset to calibrate against; inventing one and fitting to it would be exactly the overclaim §4.2 avoids | blocked on the benchmark |
+| **Publish `crumb-format` 1.2.0 and `crumb-llm` to PyPI** | needs credentials no workflow here has; until then every install is a git URL, which roughly halves the people who will try it. The ordered checklist is now written down in [`RELEASE.md`](../RELEASE.md) — the step that cannot be automated is the only one left | ~an hour, by a human with upload rights |
+| **Run the outcome benchmark** | the harness, the task format and the pre-registered protocol now exist in `research/handoff_benchmark/`; what is missing is an agent loop and an API budget | ~a week and a few dollars |
+| **Calibrate the rule weights** | still no outcome dataset. The protocol's `crumb+score` arm is the one that would produce it, and if that arm does not beat plain `crumb`, the eight weights are measuring the wrong things and should change | blocked on the outcome run |
+| **Make the demo public** | it exists and runs client-side; publishing it is a sharing decision, not an engineering one | minutes |
+| **Split the EJA repository** | ✅ decoupled and CI-enforced; only the repository creation is left | ~20 minutes |
 
 ---
 

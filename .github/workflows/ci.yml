@@ -91,8 +91,26 @@ jobs:
           print("OK: crumb_eja imports nothing from crumb_llm")
           PY
 
+      # tests/test_web_parity.py skips itself without node, so without this
+      # the browser scorer would be silently unchecked in CI -- which is the
+      # exact shape of the drift that put three private CRUMB parsers in this
+      # ecosystem. Runners ship node; this makes the dependency explicit.
+      - name: Set up Node (the browser scorer's parity test needs it)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Run tests
         run: pytest -q
+
+      - name: Fail if the browser-scorer parity test was skipped
+        run: |
+          pytest tests/test_web_parity.py -q -rs --no-header \
+            | tee /tmp/parity.txt
+          if grep -q "skipped" /tmp/parity.txt; then
+            echo "web/crumb-score.js was not checked against crumb_llm/score.py" >&2
+            exit 1
+          fi
 
       - name: Smoke-test the CLI
         run: |

@@ -20,6 +20,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   of a session and truncation eats the start. Tests assert both unflattering
   results so the write-up cannot drift away from them.
 - `crumb-eja`, a console script for CRUMB EJA.
+- **A browser scorer and a demo page** (`web/`). `web/crumb-score.js` is a port
+  of `crumb_llm/score.py`, and `tests/test_web_parity.py` runs it under node and
+  asserts agreement signal by signal on every CRUMB the repository ships, plus
+  sixteen boundary cases. This ecosystem has already shipped three private
+  copies of one grammar that drifted because nothing compared them; a second
+  scorer written for a demo is the same mistake unless something checks. CI
+  fails if that parity test is skipped rather than run.
+- `RELEASE.md` — the ordered path off git-URL installs, including the two
+  workarounds in CI and the README that become lies the moment
+  `crumb-format` 1.2.0 reaches PyPI.
+- A logo (`assets/`), as SVG sources with a dark variant.
 - **`crumblm score` — readiness scoring with no model, no keys and no network.**
   Eight published rules over 17 weight units decide whether the next agent can
   actually continue from a handoff: is there a goal, is the context anchored to

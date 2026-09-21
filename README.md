@@ -1,4 +1,9 @@
-# CrumbLLM 🥖🧠
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/XioAISolutions/CrumbLLM/main/assets/logo-lockup-dark.svg" />
+    <img src="https://raw.githubusercontent.com/XioAISolutions/CrumbLLM/main/assets/logo-lockup.svg" alt="CrumbLLM" width="300" />
+  </picture>
+</p>
 
 <p align="center">
   <strong>Score a handoff before you trust it. Deterministically, in 0.3&nbsp;ms, with no model at all.</strong>
@@ -74,6 +79,21 @@ weak-handoff.crumb
 No API key was set. No model ran. No network call was made. Run it again on a different machine and you get the same 0.29.
 
 Measured at **0.30 ms p50** end to end — parse from disk plus score, 200 iterations, Python 3.11 on an x86-64 Linux container (`score_doc` alone: 0.24 ms p50, 0.32 ms p95 over 1,000 iterations). Reproduce with [`research/bench_score.py`](research/bench_score.py); the raw numbers are in [`research/score_latency.json`](research/score_latency.json). Every figure in this README is measured on the machine that ran CI, not estimated.
+
+### Try it without installing anything
+
+The same eight rules run client-side in `web/`, so you can paste a handoff and
+watch it fail:
+
+```bash
+python -m http.server -d web 8000   # then open http://localhost:8000
+```
+
+`web/crumb-score.js` is a port of `crumb_llm/score.py`, and it is not kept
+faithful by a promise: `tests/test_web_parity.py` runs it under node and
+asserts, signal by signal, that it agrees with the Python implementation on
+every CRUMB this repository ships. This project has already paid once for three
+private copies of one grammar drifting apart.
 
 ---
 
@@ -268,7 +288,9 @@ pytest
 crumblm score examples/weak-handoff.crumb
 ```
 
-CI tests Python 3.10–3.12, enforces that parsing goes through `crumb_core` with no vendored fork, builds the distribution, checks the wheel's dependency surface, and — in a job of its own — **runs the install commands from this README verbatim in a clean environment**, so the quickstart cannot rot while CI stays green.
+CI tests Python 3.10–3.12, enforces that parsing goes through `crumb_core` with no vendored fork, enforces that `crumb_eja` imports nothing from `crumb_llm`, checks the browser scorer against the Python one under node, builds the distribution, checks the wheel's dependency surface, and — in a job of its own — **runs the install commands from this README verbatim in a clean environment**, so the quickstart cannot rot while CI stays green.
+
+Publishing to PyPI is the one thing that would cut this project's install friction in half, and it needs credentials no workflow here has. [`RELEASE.md`](RELEASE.md) is the ordered checklist.
 
 ## Contributing
 
