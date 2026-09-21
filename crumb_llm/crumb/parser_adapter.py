@@ -22,8 +22,13 @@ try:
     import crumb_core
 except ImportError as _exc:  # pragma: no cover - exercised by the import-failure test
     raise ImportError(
-        "crumb_core is required to read CRUMB files. Install it with "
-        "`pip install crumb-format`, which ships the reference parser."
+        "crumb_core is required to read CRUMB files.\n"
+        "\n"
+        "  pip install 'crumb-format @ git+https://github.com/XioAISolutions/crumb-format@main'\n"
+        "\n"
+        "`pip install crumb-format` alone is not enough today: the released "
+        "version on PyPI is 0.2.0, which predates crumb_core. Install from git "
+        "until 1.2.0 is published, then the plain PyPI install will work."
     ) from _exc
 
 

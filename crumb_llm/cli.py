@@ -13,6 +13,12 @@ from crumb_llm.crumb.writer import dumps_json, write_output
 from crumb_llm.engine import CrumbEngine
 from crumb_llm.models import CrumbDoc, CrumbPack, ProviderConfig
 from crumb_llm.providers import get_provider
+from crumb_llm.score import (
+    render_doc,
+    render_pack,
+    score_doc,
+    score_pack,
+)
 from crumb_llm.eja.cli import register_eja_subparser
 
 
@@ -92,6 +98,35 @@ def cmd_improve(args) -> int:
     doc = load_crumb(args.crumb_file)
     result = _build_engine().improve_handoff(doc)
     return _emit(result, args.out)
+
+
+def cmd_score(args) -> int:
+    """Score handoff readiness with no model, no network and no keys.
+
+    The only command in this package that never calls a provider, which is
+    what makes it usable as a CI gate: ``--min`` turns a readiness threshold
+    into an exit code.
+    """
+    source = _load_source(args.source)
+    if isinstance(source, CrumbPack):
+        result = score_pack(source)
+        rendered = render_pack(result, explain=args.explain)
+    else:
+        result = score_doc(source)
+        rendered = render_doc(result, explain=args.explain)
+
+    if args.format == "json":
+        write_output(dumps_json(result.to_dict()), args.out)
+    else:
+        write_output(rendered, args.out)
+
+    if args.min is not None and result.score < args.min:
+        print(
+            f"error: readiness {result.score:.2f} is below the required {args.min:.2f}",
+            file=sys.stderr,
+        )
+        return 1
+    return 0
 
 
 def _save_provider(cfg: ProviderConfig) -> int:
@@ -187,6 +222,23 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("crumb_file")
     p.add_argument("--out")
     p.set_defaults(func=cmd_improve)
+
+    p = sub.add_parser(
+        "score",
+        help="Score handoff readiness deterministically (no model, no keys)",
+    )
+    p.add_argument("source", help="A .crumb file or a pack directory")
+    p.add_argument("--format", choices=["text", "json"], default="text")
+    p.add_argument("--explain", action="store_true", help="Show evidence for passing rules too")
+    p.add_argument(
+        "--min",
+        type=float,
+        default=None,
+        metavar="SCORE",
+        help="Exit 1 when readiness falls below SCORE (for CI gates)",
+    )
+    p.add_argument("--out")
+    p.set_defaults(func=cmd_score)
 
     p = sub.add_parser("setup", help="Configure a provider (no secrets stored)")
     p.add_argument("target", choices=["openai", "anthropic", "local"])

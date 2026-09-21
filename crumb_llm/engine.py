@@ -79,6 +79,18 @@ class CrumbEngine:
         except ProviderError as exc:
             warnings.append(f"provider error: {exc}")
 
+        # A stub provider returns placeholder text that no content gate can
+        # catch: it parses, it is long enough, and it matches no refusal
+        # phrase. Left alone, `crumblm analyze` on a fresh install reported
+        # ok=True over a sentence that says nothing about the CRUMB. The
+        # provider knows it is a stub, so the engine says so.
+        if getattr(self.provider, "is_stub", False):
+            warnings.append(
+                f"provider {getattr(self.provider, 'name', 'unknown')!r} returns "
+                "placeholder text, not analysis — run `crumblm setup` to configure "
+                "a real provider, or `crumblm score` for a result that needs no model"
+            )
+
         expect_json = as_json and task in _JSON_CAPABLE
         parsed, gate_warnings = run_quality_gates(
             text, source_paths=source_paths, expect_json=expect_json

@@ -141,3 +141,60 @@ jobs:
           /tmp/wheel-env/bin/pip install "crumb-format @ git+https://github.com/XioAISolutions/crumb-format@main"
           /tmp/wheel-env/bin/pip install --no-deps dist/*.whl
           /tmp/wheel-env/bin/crumblm --version
+
+  quickstart:
+    name: the README's install and first command, exactly as written
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # The other jobs install crumb-format from git before touching this
+      # package, which is why they stayed green while `pip install
+      # git+.../CrumbLLM` -- the command the README put first -- failed for
+      # every real user: crumb-format>=1.2.0 does not exist on PyPI, only
+      # 0.2.0 does. A green CI over a broken quickstart is worse than a red
+      # one, so this job runs what the README tells a stranger to run, in a
+      # clean environment, with no help from the steps above.
+      - name: Run every pip command the README documents, in order
+        run: |
+          set -euo pipefail
+          python -m venv /tmp/quickstart
+          python - <<'EXTRACT' > /tmp/install-commands.sh
+          import pathlib, re
+
+          readme = pathlib.Path("README.md").read_text(encoding="utf-8")
+          block = re.search(r"<!-- install:start -->(.*?)<!-- install:end -->", readme, re.S)
+          assert block, "README lost its <!-- install:start --> marker"
+          commands = [
+              line.strip()
+              for line in block.group(1).splitlines()
+              if line.strip().startswith("pip install")
+          ]
+          assert commands, "no pip install command found between the install markers"
+          for command in commands:
+              print(command.replace("pip install", "/tmp/quickstart/bin/pip install", 1))
+          EXTRACT
+          cat /tmp/install-commands.sh
+          bash -euo pipefail /tmp/install-commands.sh
+
+      # The step above proves the documented commands *resolve and complete*,
+      # but `pip install git+...CrumbLLM` fetches the default branch, so on a
+      # pull request it installed main rather than the change under review.
+      # Overlay the checkout so the README's first command runs against this
+      # branch's code, in the environment the README's own install produced.
+      - name: Overlay the branch under review
+        run: /tmp/quickstart/bin/pip install --no-deps -e .
+
+      - name: Run the README's first command
+        run: |
+          /tmp/quickstart/bin/crumblm score examples/weak-handoff.crumb --min 0.6 && {
+            echo "the weak example must fail a 0.6 gate; it did not" >&2
+            exit 1
+          }
+          /tmp/quickstart/bin/crumblm score examples/basic.crumb --min 0.6
+          /tmp/quickstart/bin/crumblm analyze examples/basic.crumb

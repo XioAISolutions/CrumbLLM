@@ -72,3 +72,45 @@ def test_engine_risks_json_invalid_warns(basic_crumb):
     engine = CrumbEngine(provider=BadJsonProvider())
     result = engine.risks(doc, as_json=True)
     assert any("did not parse" in w for w in result.warnings)
+
+
+# --- stub providers must never be reported as trustworthy ------------------
+
+def test_stub_provider_output_is_never_ok():
+    """A gate that passes its own placeholder is not a gate.
+
+    MockProvider text parses, is long enough, and matches no refusal phrase,
+    so every content gate passed it and `ok` was True over a sentence that
+    says nothing about the CRUMB. The provider knows it is a stub; the engine
+    says so.
+    """
+    from crumb_llm.crumb.loader import load_crumb_text
+    from crumb_llm.engine import CrumbEngine
+
+    doc = load_crumb_text(
+        "BEGIN CRUMB\nv=1.2\nkind=task\nsource=test\n---\n"
+        "[goal]\ng\n[context]\nc\n[constraints]\nn\nEND CRUMB"
+    )
+    result = CrumbEngine().analyze(doc)
+    assert result.provider == "mock"
+    assert not result.ok
+    assert any("placeholder text" in w for w in result.warnings)
+
+
+def test_a_real_provider_is_not_flagged_as_a_stub():
+    from crumb_llm.crumb.loader import load_crumb_text
+    from crumb_llm.engine import CrumbEngine
+    from crumb_llm.providers.base import BaseProvider
+
+    class RealEnough(BaseProvider):
+        name = "fake-real"
+
+        def generate(self, prompt, max_tokens=1024, temperature=0.2):
+            return "The goal is to add a limiter; the risk is worker starvation."
+
+    doc = load_crumb_text(
+        "BEGIN CRUMB\nv=1.2\nkind=task\nsource=test\n---\n"
+        "[goal]\ng\n[context]\nc\n[constraints]\nn\nEND CRUMB"
+    )
+    result = CrumbEngine(provider=RealEnough()).analyze(doc)
+    assert result.ok, result.warnings

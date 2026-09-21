@@ -26,6 +26,11 @@ class BaseProvider(abc.ABC):
 
     name: str = "base"
 
+    #: True when the provider returns canned text instead of model output.
+    #: The engine turns this into a warning, because a quality gate that
+    #: passes its own placeholder is not a quality gate.
+    is_stub: bool = False
+
     def __init__(self, model: str = "", base_url: str = ""):
         self.model = model
         self.base_url = base_url
@@ -77,6 +82,7 @@ class MockProvider(BaseProvider):
     """
 
     name = "mock"
+    is_stub = True
 
     def generate(
         self,
